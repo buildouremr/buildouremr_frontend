@@ -1,29 +1,38 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import AppointmentsAPI from "../API/appointmentsAPI";
 
-const useAppointmentStats = () => {
+/** Format a Date object → "YYYY-MM-DD" */
+const formatDate = (date) => {
+  const d = new Date(date);
+  const year  = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, "0");
+  const day   = String(d.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+};
+
+const useAppointmentStats = (selectedDate) => {
   const [counts, setCounts] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  const fetchCounts = async () => {
+  const fetchCounts = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
       const userId = localStorage.getItem("userId") || 1;
-      const res = await AppointmentsAPI.getAppointmentStatusCounts(userId);
+      const dateStr = selectedDate ? formatDate(selectedDate) : null;
+      const res = await AppointmentsAPI.getAppointmentStatusCounts(userId, dateStr);
       setCounts(res.data?.data ?? null);
     } catch (err) {
       setError(err?.message || "Failed to load stats");
     } finally {
       setLoading(false);
     }
-  };
+  }, [selectedDate]);
 
   useEffect(() => {
     fetchCounts();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [fetchCounts]);
 
   // Build the stats array from API keys
   const stats = counts
@@ -36,10 +45,7 @@ const useAppointmentStats = () => {
       ]
     : [];
 
-  const data = { stats, counts, loading, error };
-  const meth = { fetchCounts };
-
-  return { ...data, ...meth };
+  return { stats, counts, loading, error, fetchCounts };
 };
 
 export default useAppointmentStats;

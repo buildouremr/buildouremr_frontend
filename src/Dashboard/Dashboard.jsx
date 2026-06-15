@@ -15,25 +15,44 @@ import SessionTimeoutModal from "../components/SessionTimeoutModal";
 
 const Dashboard = ({ onLogout }) => {
   const [activeMenu, setActiveMenu] = useState("Dashboard");
+  const [apptInitialFilter, setApptInitialFilter] = useState("All Appointments");
+
   const {
     summaryData,
     summaryLoading,
+    selectedDate,
+    handleDateChange,
     showTimeoutModal,
     countdown,
     continueSession
   } = useDashboard();
 
+  /** Navigate to Appointments tab with a pre-selected status filter */
+  const goToAppointments = (filter) => {
+    setApptInitialFilter(filter);
+    setActiveMenu("Appointments");
+  };
+
   const renderContent = () => {
     if (activeMenu === "Appointments") {
-      return <Appointments />;
+      return <Appointments initialFilter={apptInitialFilter} />;
     }
 
     // Default Dashboard Overview
     return (
       <div className="db-content">
-        <WelcomeSection summaryData={summaryData} summaryLoading={summaryLoading} />
-        <StatsCards summaryData={summaryData} summaryLoading={summaryLoading} />
-        <PatientQueue />
+        <WelcomeSection
+          summaryData={summaryData}
+          summaryLoading={summaryLoading}
+          selectedDate={selectedDate}
+          onDateChange={handleDateChange}
+        />
+        <StatsCards
+          summaryData={summaryData}
+          summaryLoading={summaryLoading}
+          onCardClick={goToAppointments}
+        />
+        <PatientQueue selectedDate={selectedDate} onViewAll={() => goToAppointments("All Appointments")} />
         <div className="db-row">
           <div className="db-col-left">
             <PriorityCenter />
@@ -57,7 +76,7 @@ const Dashboard = ({ onLogout }) => {
   return (
     <>
       <div className="db-layout">
-        <Sidebar activeMenu={activeMenu} onMenuChange={setActiveMenu} onLogout={onLogout} />
+        <Sidebar activeMenu={activeMenu} onMenuChange={setActiveMenu} onLogout={onLogout} summaryData={summaryData} />
         <div className="db-main">
           <Topbar onLogout={onLogout} />
           {renderContent()}
@@ -72,9 +91,10 @@ const Dashboard = ({ onLogout }) => {
         }
         .db-row {
           display: flex; gap: 20px; padding: 0 28px; margin-bottom: 20px;
+          align-items: stretch;
         }
-        .db-col-left { flex: 1; }
-        .db-col-right { flex: 1; }
+        .db-col-left { flex: 1; display: flex; flex-direction: column; }
+        .db-col-right { flex: 1; display: flex; flex-direction: column; }
       `}</style>
 
       <SessionTimeoutModal

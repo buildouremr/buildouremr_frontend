@@ -27,6 +27,7 @@ function App() {
   }, []);
 
   const handleLoginSuccess = () => {
+    setShowExpiredModal(false); // clear any stale modal state from a previous session
     setIsLoggedIn(true);
   };
 

@@ -7,7 +7,14 @@ const iconMap = {
   cancelled: MdEventBusy,
 };
 
-const StatsCards = ({ summaryData, summaryLoading }) => {
+/** Map card → appointments filter tab */
+const CARD_TO_FILTER = {
+  waiting:      "Pending",
+  appointments: "All Appointments",
+  cancelled:    "Cancelled",
+};
+
+const StatsCards = ({ summaryData, summaryLoading, onCardClick }) => {
   const { stats } = useStatsCards(summaryData);
 
   return (
@@ -16,7 +23,12 @@ const StatsCards = ({ summaryData, summaryLoading }) => {
         {stats.map((stat, index) => {
           const IconComp = iconMap[stat.iconType];
           return (
-            <div className="sc-card" key={index}>
+            <div
+              className="sc-card sc-card-clickable"
+              key={index}
+              onClick={() => onCardClick && onCardClick(CARD_TO_FILTER[stat.iconType] || "All Appointments")}
+              title={`Go to ${stat.title}`}
+            >
               <div className="sc-info">
                 <p className="sc-title">{stat.title}</p>
                 <div className="sc-value-row">
@@ -54,8 +66,14 @@ const StatsCards = ({ summaryData, summaryLoading }) => {
           border: 1px solid #eef0f5;
           transition: box-shadow 0.2s ease;
         }
-        .sc-card:hover {
-          box-shadow: 0 4px 16px rgba(0,0,0,0.06);
+        .sc-card-clickable {
+          cursor: pointer;
+          transition: box-shadow 0.18s, transform 0.15s, border-color 0.18s;
+        }
+        .sc-card-clickable:hover {
+          box-shadow: 0 6px 20px rgba(46,125,247,0.1);
+          border-color: #c3d9ff;
+          transform: translateY(-2px);
         }
         .sc-title {
           font-size: 0.82rem;

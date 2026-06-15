@@ -1,11 +1,19 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
-const useSidebar = (initialMenu = "Dashboard", onMenuChange) => {
+const useSidebar = (initialMenu = "Dashboard", onMenuChange, summaryData) => {
   const [activeMenu, setActiveMenu] = useState(initialMenu);
+
+  // Sync internal state whenever the parent-controlled prop changes
+  // (e.g., when a Dashboard stat card navigates to Appointments)
+  useEffect(() => {
+    setActiveMenu(initialMenu);
+  }, [initialMenu]);
+
+  const apptsCount = summaryData?.totalAppointments ?? "0";
 
   const mainMenuItems = [
     { name: "Dashboard", icon: "dashboard" },
-    { name: "Appointments", icon: "calendar", badge: "5" },
+    { name: "Appointments", icon: "calendar", badge: apptsCount.toString() },
     { name: "Patients", icon: "people" },
     { name: "Doctors", icon: "medical" },
     { name: "Laboratory", icon: "science", tag: "Beta", tagColor: "#28a745" },

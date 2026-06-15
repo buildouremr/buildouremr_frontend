@@ -34,7 +34,10 @@ axiosInstance.interceptors.response.use(
         const status = error?.response?.status;
 
         // 🔐 Handle Unauthorized (Token Expired / Invalid)
-        if (status === 401 || status === 403) {
+        // ONLY fire the session-expired event when a token already exists,
+        // meaning the user IS authenticated but the token has since expired.
+        // This prevents triggering the modal on fresh login failures (no token yet).
+        if ((status === 401 || status === 403) && localStorage.getItem("token")) {
             localStorage.removeItem("token");
 
             // Dispatch event to show custom UI modal

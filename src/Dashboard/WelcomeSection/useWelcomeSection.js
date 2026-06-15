@@ -1,8 +1,15 @@
-import { useState } from "react";
+const MONTHS = [
+  "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+  "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
+];
 
-const useWelcomeSection = (summaryData, summaryLoading) => {
-  const [activeFilter, setActiveFilter] = useState("Today");
+const formatHeaderDate = (d) => {
+  if (!d) return "";
+  const date = new Date(d);
+  return `${date.getDate()} ${MONTHS[date.getMonth()]} ${date.getFullYear()}`;
+};
 
+const useWelcomeSection = (summaryData, summaryLoading, selectedDate) => {
   // Build display name: prepend "Dr. " only when role is Doctor
   const buildDisplayName = () => {
     if (!summaryData) return "—";
@@ -14,16 +21,10 @@ const useWelcomeSection = (summaryData, summaryLoading) => {
     doctorName: buildDisplayName(),
     visitCount: summaryData?.totalAppointments ?? "—",
     summaryLoading,
-    filterOptions: ["Today", "1d", "2d", "3d", "1W"],
-    activeFilter,
+    formattedDate: formatHeaderDate(selectedDate),
   };
 
-  const meth = {
-    handleFilterChange: (filter) => setActiveFilter(filter),
-  };
-
-  const result = { ...data, ...meth };
-  return result;
+  return data;
 };
 
 export default useWelcomeSection;

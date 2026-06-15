@@ -1,16 +1,22 @@
 import usePatientQueue from "./usePatientQueue";
 import { MdPerson, MdCalendarMonth } from "react-icons/md";
+import Pagination from "../../components/Pagination/Pagination";
 
-const PatientQueue = () => {
-  const { patients, loading, error, handleViewAll } = usePatientQueue();
+const MAX_ROWS = 5;
+
+const PatientQueue = ({ selectedDate, onViewAll }) => {
+  const {
+    patients, loading, error, handleViewAll,
+    currentPage, totalPages, handlePageChange
+  } = usePatientQueue(selectedDate, onViewAll);
 
   const getTypeStyle = (type) => {
     if (type === "Reg") return { background: "#FFE8E8", color: "#E74C3C" };
     return { background: "#E8F0FF", color: "#2E7DF7" };
   };
 
-  const displayPatients = patients.slice(0, 5);
-  const emptyRowCount = Math.max(0, 5 - displayPatients.length);
+  const displayPatients = patients.slice(0, MAX_ROWS);
+  const emptyRowCount = Math.max(0, MAX_ROWS - displayPatients.length);
 
   return (
     <>
@@ -18,31 +24,33 @@ const PatientQueue = () => {
         <div className="pq-header">
           <h2 className="pq-title">In Patients Queue</h2>
           {patients.length > 0 && (
-            <span className="pq-view-all" onClick={handleViewAll}>View All</span>
+            <span className="pq-view-all" onClick={handleViewAll}>View More</span>
           )}
         </div>
 
         {loading ? (
-          <div className="pq-state-wrapper">
+          /* Fixed-height skeleton area */
+          <div className="pq-fixed-area pq-state-wrapper">
             <span className="pq-loading-dot" />
             <span className="pq-loading-dot" />
             <span className="pq-loading-dot" />
           </div>
         ) : error ? (
-          <div className="pq-state-wrapper pq-error-cell">⚠ {error}</div>
+          <div className="pq-fixed-area pq-state-wrapper pq-error-cell">⚠ {error}</div>
         ) : patients.length === 0 ? (
-          <div className="pq-empty-state">
+          /* Empty state still takes fixed height */
+          <div className="pq-fixed-area pq-empty-state">
             <div className="pq-empty-icon">
               <MdCalendarMonth style={{ fontSize: "1.6rem", color: "#fff" }} />
             </div>
             <h3 className="pq-empty-title">You're all caught up!</h3>
-            <p className="pq-empty-text">No patients are waiting at the moment. Great job keeping up with your schedule.</p>
-            <button className="pq-empty-btn">
-              <MdCalendarMonth style={{ fontSize: "1.1rem" }} /> View next day's schedule
-            </button>
+            <p className="pq-empty-text">
+              No patients are waiting at the moment. Great job keeping up with your schedule.
+            </p>
           </div>
         ) : (
-          <div className="pq-table-wrapper">
+          /* Fixed-height table area — always shows 10 row slots */
+          <div className="pq-fixed-area pq-table-wrapper">
             <table className="pq-table">
               <thead>
                 <tr>
@@ -52,7 +60,7 @@ const PatientQueue = () => {
                   <th>Doctor Name</th>
                   <th>Status</th>
                   <th>PT Type</th>
-                  <th>Date & Time</th>
+                  <th>Date &amp; Time</th>
                   <th>Case Details</th>
                 </tr>
               </thead>
@@ -78,15 +86,10 @@ const PatientQueue = () => {
                       </div>
                     </td>
                     <td>
-                      <span className="pq-status-badge">
-                        {p.status}
-                      </span>
+                      <span className="pq-status-badge">{p.status}</span>
                     </td>
                     <td>
-                      <span
-                        className="pq-type-badge"
-                        style={getTypeStyle(p.ptType)}
-                      >
+                      <span className="pq-type-badge" style={getTypeStyle(p.ptType)}>
                         {p.ptType}
                       </span>
                     </td>
@@ -94,14 +97,24 @@ const PatientQueue = () => {
                     <td className="pq-case">{p.caseDetails}</td>
                   </tr>
                 ))}
+                {/* Filler rows to maintain fixed height for 10 slots */}
                 {Array.from({ length: emptyRowCount }).map((_, i) => (
-                  <tr key={`empty-${i}`}>
+                  <tr key={`filler-${i}`}>
                     <td colSpan={8} className="pq-empty-row-cell">&nbsp;</td>
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
+        )}
+
+        {/* Pagination — show whenever there is at least 1 record */}
+        {!loading && !error && patients.length > 0 && (
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={handlePageChange}
+          />
         )}
       </div>
 
@@ -139,6 +152,12 @@ const PatientQueue = () => {
           color: #2E7DF7;
           border-color: #2E7DF7;
         }
+
+        /* Fixed-height content area — always tall enough for 5 rows */
+        .pq-fixed-area {
+          min-height: 280px;
+        }
+
         .pq-table-wrapper {
           overflow-x: auto;
         }
@@ -159,10 +178,12 @@ const PatientQueue = () => {
           font-size: 0.8rem;
         }
         .pq-table td {
-          padding: 14px 14px;
+          padding: 0 14px;
+          height: 53px;
           border-bottom: 1px solid #f0f2f5;
           color: #374151;
           vertical-align: middle;
+          box-sizing: border-box;
         }
         .pq-table tbody tr:hover {
           background: #fafbfd;
@@ -217,12 +238,6 @@ const PatientQueue = () => {
           color: #6b7280;
           font-size: 0.8rem;
         }
-        .pq-state-cell {
-          text-align: center;
-          padding: 32px 14px;
-          color: #9ca3af;
-          font-size: 0.85rem;
-        }
         .pq-error-cell {
           color: #E74C3C;
         }
@@ -242,26 +257,31 @@ const PatientQueue = () => {
           40%            { transform: scale(1);   opacity: 1;   }
         }
         .pq-empty-row-cell {
-          height: 57px;
+          height: 53px;
+          border-bottom: 1px solid #f0f2f5;
+          box-sizing: border-box;
         }
         .pq-state-wrapper {
           text-align: center;
           padding: 80px 14px;
           color: #9ca3af;
           font-size: 0.85rem;
+          display: flex;
+          align-items: center;
+          justify-content: center;
         }
         .pq-empty-state {
-          padding: 60px 14px 80px 14px;
           display: flex;
           flex-direction: column;
           align-items: center;
           justify-content: center;
           text-align: center;
+          padding: 40px 14px;
         }
         .pq-empty-icon {
           width: 48px;
           height: 48px;
-          background: #34d399; /* Green color from design */
+          background: #34d399;
           border-radius: 12px;
           display: flex;
           align-items: center;
@@ -277,24 +297,7 @@ const PatientQueue = () => {
         .pq-empty-text {
           color: #9ca3af;
           font-size: 1rem;
-          margin: 0 0 25px 0;
-        }
-        .pq-empty-btn {
-          background: #2E7DF7;
-          color: #fff;
-          border: none;
-          padding: 10px 24px;
-          border-radius: 6px;
-          font-size: 0.9rem;
-          font-weight: 600;
-          cursor: pointer;
-          display: inline-flex;
-          align-items: center;
-          gap: 8px;
-          transition: background 0.2s;
-        }
-        .pq-empty-btn:hover {
-          background: #1b6ae0;
+          margin: 0;
         }
       `}</style>
     </>

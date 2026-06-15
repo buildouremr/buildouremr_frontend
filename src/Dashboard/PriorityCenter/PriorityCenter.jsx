@@ -8,7 +8,6 @@ const PriorityCenter = () => {
       <div className="pc-container">
         <div className="pc-header">
           <h2 className="pc-title">Priority Center</h2>
-          <span className="pc-view-all" onClick={() => handleView('all')}>View All</span>
         </div>
         <div className="pc-list">
           {priorities.map((item) => (

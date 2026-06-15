@@ -48,7 +48,7 @@ const useLogin = (onLoginSuccess) => {
 
     try {
       const response = await LoginAPI.login({
-        userName: email,
+        userEmail: email,
         password: password
       });
 

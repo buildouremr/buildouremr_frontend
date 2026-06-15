@@ -13,8 +13,8 @@ const iconMap = {
   changelog: MdTrackChanges, layers: MdLayers,
 };
 
-const Sidebar = ({ activeMenu: propActiveMenu, onMenuChange }) => {
-  const { activeMenu, mainMenuItems, helpMenuItems, handleMenuClick } = useSidebar(propActiveMenu, onMenuChange);
+const Sidebar = ({ activeMenu: propActiveMenu, onMenuChange, summaryData }) => {
+  const { activeMenu, mainMenuItems, helpMenuItems, handleMenuClick } = useSidebar(propActiveMenu, onMenuChange, summaryData);
 
   return (
     <>

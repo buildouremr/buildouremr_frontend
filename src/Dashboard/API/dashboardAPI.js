@@ -1,9 +1,13 @@
 import axiosInstance from "../../utils/useAPIClient";
 
 const DashboardAPI = {
-    getDashboardSummary: (userId) => axiosInstance.get(`/dashboard/getSummary?userId=${userId}`),
+    getDashboardSummary: (userId, date) => {
+        const apptDate = date || new Date().toISOString().split('T')[0];
+        return axiosInstance.get(`/dashboard/getSummary?userId=${userId}&apptDate=${apptDate}`);
+    },
 
-    getDashboardAppointments: () => axiosInstance.get("/dashboard/getAppointments?userId=1"),
+    getDashboardAppointments: (apptDate, pageNo) =>
+        axiosInstance.get(`/dashboard/getAppointments?userId=1&apptDate=${apptDate}&pageNo=${pageNo}`),
 
     getTeamList: (userId) => axiosInstance.get(`/dashboard/getTeamList?userId=${userId}`),
 };

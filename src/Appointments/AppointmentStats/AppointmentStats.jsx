@@ -10,8 +10,21 @@ const ICON_CONFIG = {
   noShow:    { icon: <BsCalendarMinus />,    iconBg: "#FFF8E8", iconColor: "#F59E0B" },
 };
 
-const AppointmentStats = () => {
-  const { stats, loading } = useAppointmentStats();
+/** Map stat key → tab name used in AppointmentTable */
+const KEY_TO_TAB = {
+  total:     "All Appointments",
+  completed: "Completed",
+  pending:   "Pending",
+  cancelled: "Cancelled",
+  noShow:    "No Show",
+};
+
+const AppointmentStats = ({ selectedDate, onFilterSelect }) => {
+  const { stats, loading } = useAppointmentStats(selectedDate);
+
+  const handleCardClick = (key) => {
+    if (onFilterSelect) onFilterSelect(KEY_TO_TAB[key] || "All Appointments");
+  };
 
   return (
     <>
@@ -29,7 +42,12 @@ const AppointmentStats = () => {
           : stats.map((s) => {
               const cfg = ICON_CONFIG[s.key] || ICON_CONFIG.total;
               return (
-                <div className="as-card" key={s.key}>
+                <div
+                  className="as-card as-card-clickable"
+                  key={s.key}
+                  onClick={() => handleCardClick(s.key)}
+                  title={`Filter by ${s.label}`}
+                >
                   <div className="as-card-left">
                     <span className="as-label">{s.label}</span>
                     <div className="as-value-row">
@@ -51,23 +69,30 @@ const AppointmentStats = () => {
         .as-container {
           display: flex;
           align-items: stretch;
-          gap: 0;
-          background: #fff;
-          border: 1px solid #eef0f5;
-          border-radius: 12px;
+          gap: 16px;
           margin: 16px 28px 0 28px;
-          overflow: hidden;
         }
         .as-card {
           flex: 1;
+          background: #fff;
+          border: 1px solid #eef0f5;
+          border-radius: 12px;
           padding: 16px 20px;
-          border-right: 1px solid #eef0f5;
           display: flex;
           align-items: center;
           justify-content: space-between;
           gap: 12px;
+          box-shadow: 0 1px 3px rgba(0,0,0,0.02);
         }
-        .as-card:last-child { border-right: none; }
+        .as-card-clickable {
+          cursor: pointer;
+          transition: box-shadow 0.18s, transform 0.15s, border-color 0.18s;
+        }
+        .as-card-clickable:hover {
+          box-shadow: 0 4px 16px rgba(46,125,247,0.1);
+          border-color: #c3d9ff;
+          transform: translateY(-1px);
+        }
         .as-card-left {
           display: flex;
           flex-direction: column;

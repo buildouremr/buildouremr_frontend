@@ -2,13 +2,13 @@ import { useRef } from "react";
 import useAppointmentHeader from "./useAppointmentHeader";
 import { MdChevronLeft, MdChevronRight, MdAdd } from "react-icons/md";
 
-const AppointmentHeader = () => {
+const AppointmentHeader = ({ selectedDate, onDateChange, onNewAppointment }) => {
   const {
     formattedDate,
     handlePrev, handleNext,
     handleNewAppointment,
     handleDateChange,
-  } = useAppointmentHeader();
+  } = useAppointmentHeader({ selectedDate, onDateChange, onNewAppointment });
 
   const dateInputRef = useRef(null);
 

@@ -1,6 +1,13 @@
 import useAppointmentTable from "./useAppointmentTable";
-import { MdMoreVert, MdSearch } from "react-icons/md";
+import { useState, useRef, useEffect, useCallback } from "react";
+import { MdMoreVert, MdSearch, MdCalendarMonth } from "react-icons/md";
 import PatientDetailPanel from "../PatientDetailPanel/PatientDetailPanel";
+import Pagination from "../../components/Pagination/Pagination";
+
+// Height of a single data row (must match .at-table td height in CSS below)
+const ROW_HEIGHT = 57;
+// Minimum rows to always show (prevents an empty-looking table on tiny screens)
+const MIN_ROWS = 3;
 
 const getStatusStyle = (status) => {
   switch (status) {
@@ -11,12 +18,6 @@ const getStatusStyle = (status) => {
     case "No Show":   return { color: "#6b7280", bg: "#f0f2f5" };
     default:          return { color: "#6b7280", bg: "#f0f2f5" };
   }
-};
-
-const getTypeStyle = (type) => {
-  if (type === "Follow-up" || type === "Follow up")
-    return { color: "#0D9B5C", bg: "#E8F8F0" };
-  return { color: "#2E7DF7", bg: "#E8F0FF" };
 };
 
 const AvatarInitials = ({ name, cls }) => {
@@ -34,190 +35,300 @@ const SkeletonRow = () => (
   </tr>
 );
 
-const AppointmentTable = () => {
+/** Fixed-height empty rows so the table always spans 10 rows */
+const EmptyRow = () => (
+  <tr className="at-empty-filler-row">
+    <td colSpan={5}>&nbsp;</td>
+  </tr>
+);
+
+const AppointmentTable = ({ selectedDate, currentPage, onPageChange, onNextDay, externalActiveTab }) => {
+  // ── Dynamic row count based on container height ──────────────────────
+  const observerRef = useRef(null);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
+
+  // Callback ref: re-attaches ResizeObserver each time the observed div changes
+  const tableBodyRef = useCallback((el) => {
+    // Disconnect previous observer
+    if (observerRef.current) { observerRef.current.disconnect(); observerRef.current = null; }
+    if (!el) return;
+    const measure = () => {
+      const theadHeight = el.querySelector("thead")?.offsetHeight || 45;
+      const available = el.offsetHeight - theadHeight;
+      const rows = Math.max(MIN_ROWS, Math.floor(available / ROW_HEIGHT));
+      setRowsPerPage(rows);
+    };
+    const obs = new ResizeObserver(measure);
+    obs.observe(el);
+    observerRef.current = obs;
+    measure(); // Initial measurement
+  }, []);
+
   const {
-    filteredAppointments, tabs, tabCounts, activeTab,
+    pageAppointments, tabs, tabCounts, activeTab,
     selectedPatient, selectedApptId, loading, detailLoading, error,
-    searchQuery,
+    searchQuery, totalPages,
     handleTabChange, handleSelectPatient, handleClosePanel,
     handleStartConsultation, handleSearchChange,
-  } = useAppointmentTable();
+  } = useAppointmentTable({ selectedDate, currentPage, onPageChange, externalActiveTab, rowsPerPage });
+
+  const emptyRowCount = loading || error || pageAppointments.length === 0
+    ? 0
+    : Math.max(0, rowsPerPage - pageAppointments.length);
+
+  const hasAppointments = !loading && !error && pageAppointments.length > 0;
 
   return (
     <>
       <div className={`at-wrapper ${selectedPatient ? "at-with-panel" : ""}`}>
         {/* ── Main table area ── */}
-        <div className="at-main">
-          {/* Tabs */}
-          <div className="at-tabs">
-            {tabs.map((tab) => (
-              <button
-                key={tab}
-                className={`at-tab ${activeTab === tab ? "at-tab-active" : ""}`}
-                onClick={() => handleTabChange(tab)}
-              >
-                {tab}{tabCounts[tab] > 0 && ` (${tabCounts[tab]})`}
-              </button>
-            ))}
-          </div>
-
-          {/* Queue header with search */}
-          <div className="at-queue-header">
-            <span className="at-queue-title">In Patients Queue</span>
-            <div className="at-search-wrap">
-              <MdSearch className="at-search-icon" />
-              <input
-                type="text"
-                className="at-search-input"
-                placeholder="Search Patients"
-                value={searchQuery}
-                onChange={(e) => handleSearchChange(e.target.value)}
-              />
+        <div className="at-main-container">
+          <div className="at-main">
+            {/* Tabs */}
+            <div className="at-tabs">
+              {tabs.map((tab) => (
+                <button
+                  key={tab}
+                  className={`at-tab ${activeTab === tab ? "at-tab-active" : ""}`}
+                  onClick={() => handleTabChange(tab)}
+                >
+                  {tab}{tabCounts[tab] > 0 && ` (${tabCounts[tab]})`}
+                </button>
+              ))}
             </div>
-          </div>
 
-          {/* Table */}
-          <div className="at-table-wrap">
-            <table className="at-table">
-              <thead>
-                <tr>
-                  <th>Time</th>
-                  <th>Patient</th>
-                  <th>Type / Issue</th>
-                  <th>Status</th>
-                  <th>Action</th>
-                </tr>
-              </thead>
-              <tbody>
-                {loading ? (
-                  [1, 2, 3, 4, 5].map((k) => <SkeletonRow key={k} />)
-                ) : error ? (
-                  <tr>
-                    <td colSpan={5} className="at-state-cell at-error">⚠ {error}</td>
-                  </tr>
-                ) : filteredAppointments.length === 0 ? (
-                  <tr>
-                    <td colSpan={5} className="at-state-cell">No appointments found.</td>
-                  </tr>
-                ) : (
-                  filteredAppointments.map((appt, i) => {
-                    // API fields: patientId, patientName, status, type, startTime, endTime, reason
-                    const statusStyle = getStatusStyle(appt.status);
-                    const typeStyle   = getTypeStyle(appt.type);
-                    const isSelected  = selectedApptId === appt.patientId;
-                    const isFirst     = i === 0;
+            {/* Queue header — search only shown when there are appointments */}
+            <div className="at-queue-header">
+              <span className="at-queue-title">In Patients Queue</span>
+              {hasAppointments && (
+                <div className="at-search-wrap">
+                  <MdSearch className="at-search-icon" />
+                  <input
+                    type="text"
+                    className="at-search-input"
+                    placeholder="Search Patients"
+                    value={searchQuery}
+                    onChange={(e) => handleSearchChange(e.target.value)}
+                  />
+                </div>
+              )}
+            </div>
 
-                    return (
-                      <tr
-                        key={appt.patientId ?? i}
-                        className={`at-row ${isSelected ? "at-row-selected" : ""}`}
-                        onClick={() => handleSelectPatient(appt)}
-                      >
-                        {/* Time */}
-                        <td className="at-time-cell">
-                          <span
-                            className="at-time"
-                            style={isFirst ? { color: "#2E7DF7" } : {}}
-                          >
-                            {appt.startTime}
-                          </span>
-                          {isFirst && <span className="at-next-badge">Next</span>}
-                        </td>
+            {/* Content: skeleton | error | table (with empty-state inside fixed area) */}
+            {loading ? (
+              <div className="at-table-wrap at-table-fixed" ref={tableBodyRef}>
+                <table className="at-table">
+                  <thead>
+                    <tr>
+                      <th>Time</th><th>Patient</th><th>Type / Issue</th><th>Status</th><th>Action</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {[1, 2, 3, 4, 5].map((k) => <SkeletonRow key={k} />)}
+                  </tbody>
+                </table>
+              </div>
+            ) : error ? (
+              <div className="at-error-state">
+                <span>⚠ {error}</span>
+              </div>
+            ) : pageAppointments.length === 0 ? (
+              /* ── No-appointments empty state (fixed height) ── */
+              <div className="at-table-fixed at-empty-state">
+                <div className="at-empty-icon-wrap">
+                  <MdCalendarMonth className="at-empty-icon" />
+                </div>
+                <h3 className="at-empty-title">You're all caught up!</h3>
+                <p className="at-empty-subtitle">
+                  No patients are waiting at the moment. Great job keeping up with your schedule.
+                </p>
+                <button
+                  className="at-empty-btn"
+                  onClick={() => onNextDay && onNextDay()}
+                >
+                  <MdCalendarMonth style={{ fontSize: "1rem" }} />
+                  View next day's schedule
+                </button>
+              </div>
+            ) : (
+              <div className="at-table-wrap at-table-fixed" ref={tableBodyRef}>
+                <table className="at-table">
+                  <thead>
+                    <tr>
+                      <th>Time</th>
+                      <th>Patient</th>
+                      <th>Type / Issue</th>
+                      <th>Status</th>
+                      <th>Action</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {pageAppointments.map((appt, i) => {
+                      const statusStyle = getStatusStyle(appt.status);
+                      const typeColor   = (appt.type === "Follow-up" || appt.type === "Follow up") ? "#0D9B5C" : "#2E7DF7";
+                      const isSelected  = selectedApptId === appt.apptId;
 
-                        {/* Patient — API: patientName */}
-                        <td>
-                          <div className="at-patient-cell">
-                            <AvatarInitials name={appt.patientName} cls="at-avatar" />
-                            <div className="at-patient-info">
-                              <span className="at-patient-name">{appt.patientName}</span>
-                              <span className="at-patient-meta">
-                                {appt.patientType && `${appt.patientType}`}
+                      return (
+                        <tr
+                          key={appt.apptId ?? i}
+                          className={`at-row ${isSelected ? "at-row-selected" : ""}`}
+                          onClick={() => handleSelectPatient(appt)}
+                        >
+                          {/* Time */}
+                          <td className="at-time-cell">
+                            <div className={`at-time-wrap ${isSelected ? "at-time-selected" : ""}`}>
+                              <span className="at-time" style={isSelected ? { color: "#2E7DF7" } : {}}>
+                                {appt.startTime}
+                              </span>
+                              {isSelected && <span className="at-next-badge">Next</span>}
+                            </div>
+                          </td>
+
+                          {/* Patient */}
+                          <td>
+                            <div className="at-patient-cell">
+                              <AvatarInitials name={appt.patientName} cls="at-avatar" />
+                              <div className="at-patient-info">
+                                <span className="at-patient-name">{appt.patientName}</span>
+                                <span className="at-patient-meta">
+                                  {appt.patientType || "New"}
+                                </span>
+                              </div>
+                            </div>
+                          </td>
+
+                          {/* Type / Issue */}
+                          <td>
+                            <div className="at-type-cell">
+                              <span
+                                className="at-type-text"
+                                style={{ color: typeColor }}
+                              >
+                                {appt.type}
+                              </span>
+                              <span className="at-issue">{appt.reason}</span>
+                            </div>
+                          </td>
+
+                          {/* Status */}
+                          <td>
+                            <div className="at-status-cell">
+                              <span
+                                className="at-status-badge"
+                                style={{ color: statusStyle.color, background: statusStyle.bg }}
+                              >
+                                {appt.status}
                               </span>
                             </div>
-                          </div>
-                        </td>
+                          </td>
 
-                        {/* Type / Issue — API: type, reason */}
-                        <td>
-                          <div className="at-type-cell">
-                            <span
-                              className="at-type-badge"
-                              style={{ color: typeStyle.color, background: typeStyle.bg }}
-                            >
-                              {appt.type}
-                            </span>
-                            <span className="at-issue">{appt.reason}</span>
-                          </div>
-                        </td>
+                          {/* Action */}
+                          <td onClick={(e) => e.stopPropagation()}>
+                            <div className="at-actions-cell">
+                              <button
+                                className="at-action-btn at-btn-outline"
+                                onClick={() => handleStartConsultation(appt)}
+                              >
+                                Start Consultation
+                              </button>
+                              <button className="at-more-btn">
+                                <MdMoreVert />
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                    {/* Filler rows to keep fixed height */}
+                    {Array.from({ length: emptyRowCount }).map((_, i) => (
+                      <EmptyRow key={`filler-${i}`} />
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
 
-                        {/* Status — API: status */}
-                        <td>
-                          <div className="at-status-cell">
-                            <span
-                              className="at-status-badge"
-                              style={{ color: statusStyle.color, background: statusStyle.bg }}
-                            >
-                              {appt.status}
-                            </span>
-                          </div>
-                        </td>
-
-                        {/* Action */}
-                        <td onClick={(e) => e.stopPropagation()}>
-                          <div className="at-actions-cell">
-                            <button
-                              className="at-action-btn at-btn-primary"
-                              onClick={() => handleStartConsultation(appt)}
-                            >
-                              Start Consultation
-                            </button>
-                            <button className="at-more-btn">
-                              <MdMoreVert />
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    );
-                  })
-                )}
-              </tbody>
-            </table>
+            {/* Pagination — always shown when there are appointments */}
+            {!loading && !error && hasAppointments && (
+              <Pagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                onPageChange={onPageChange}
+              />
+            )}
           </div>
         </div>
 
         {/* ── Patient Detail Panel ── */}
         {(selectedPatient || detailLoading) && (
-          <PatientDetailPanel
-            patient={selectedPatient}
-            loading={detailLoading}
-            onClose={handleClosePanel}
-          />
+          <div className="at-panel-container">
+            <PatientDetailPanel
+              patient={selectedPatient}
+              loading={detailLoading}
+              onClose={handleClosePanel}
+            />
+          </div>
         )}
       </div>
 
       <style>{`
         .at-wrapper {
           display: flex;
-          gap: 0;
+          gap: 24px;
+          margin: 16px 28px 28px 28px;
+          align-items: stretch;
+          flex: 1;
+          overflow: hidden;
+          min-height: 0;
+        }
+        .at-main-container {
+          flex: 1;
+          min-width: 0;
+          display: flex;
+          flex-direction: column;
+          overflow: hidden;
+          min-height: 0;
+        }
+        .at-main {
           background: #fff;
           border: 1px solid #eef0f5;
           border-radius: 12px;
-          margin: 16px 28px 28px 28px;
+          display: flex;
+          flex-direction: column;
           overflow: hidden;
+          flex: 1;
         }
-        .at-main { flex: 1; min-width: 0; }
+        .at-panel-container {
+          flex-shrink: 0;
+          width: 320px;
+          background: #fff;
+          border: 1px solid #eef0f5;
+          border-radius: 12px;
+          overflow: hidden;
+          align-self: stretch;
+        }
+
+        /* Table area fills remaining height — no fixed min-height */
+        .at-table-fixed {
+          flex: 1;
+          overflow: hidden;
+          display: flex;
+          flex-direction: column;
+        }
 
         /* ── Tabs ── */
         .at-tabs {
           display: flex;
+          gap: 16px;
           border-bottom: 1px solid #eef0f5;
           padding: 0 20px;
+          flex-shrink: 0;
         }
         .at-tab {
-          padding: 14px 16px;
+          padding: 16px 4px;
           border: none;
           background: none;
-          font-size: 0.83rem;
+          font-size: 0.85rem;
           font-weight: 500;
           color: #6b7280;
           cursor: pointer;
@@ -239,6 +350,7 @@ const AppointmentTable = () => {
           align-items: center;
           justify-content: space-between;
           padding: 14px 20px 12px 20px;
+          flex-shrink: 0;
         }
         .at-queue-title {
           font-size: 0.95rem;
@@ -262,37 +374,53 @@ const AppointmentTable = () => {
         .at-search-input::placeholder { color: #9ca3af; }
 
         /* ── Table ── */
-        .at-table-wrap { overflow-x: auto; }
+        .at-table-wrap { overflow-x: auto; overflow-y: hidden; flex: 1; min-height: 0; }
         .at-table {
           width: 100%;
           border-collapse: collapse;
-          font-size: 0.83rem;
+          font-size: 0.85rem;
         }
         .at-table thead tr { background: #f8fafc; }
         .at-table th {
-          padding: 10px 16px;
+          padding: 12px 16px;
           text-align: left;
           font-weight: 600;
-          font-size: 0.78rem;
+          font-size: 0.8rem;
           color: #4b5563;
           white-space: nowrap;
         }
         .at-table td {
-          padding: 12px 16px;
+          padding: 0 16px;
+          height: 57px;
           border-bottom: 1px solid #f0f2f5;
           vertical-align: middle;
+          box-sizing: border-box;
         }
         .at-row { cursor: pointer; transition: background 0.12s; }
         .at-row:hover { background: #fafbfd; }
-        .at-row-selected { background: #EEF4FF !important; }
-        .at-row-selected td:first-child {
-          border-left: 3px solid #2E7DF7;
-          padding-left: 13px;
-        }
+        .at-row-selected { background: #f4f8ff !important; }
         .at-row:last-child td { border-bottom: none; }
 
+        /* Filler rows */
+        .at-empty-filler-row td {
+          height: 57px;
+          border-bottom: 1px solid #f0f2f5;
+          box-sizing: border-box;
+        }
+        .at-empty-filler-row:last-child td { border-bottom: none; }
+
         /* Time cell */
-        .at-time-cell { white-space: nowrap; }
+        .at-time-cell { white-space: nowrap; padding-left: 10px !important; }
+        .at-time-wrap {
+          border-left: 3px solid transparent;
+          padding-left: 12px;
+          display: flex;
+          flex-direction: column;
+          align-items: flex-start;
+        }
+        .at-time-selected {
+          border-left-color: #2E7DF7;
+        }
         .at-time { display: block; font-weight: 600; color: #1a1a2e; font-size: 0.88rem; }
         .at-next-badge {
           display: inline-block; margin-top: 3px;
@@ -304,39 +432,42 @@ const AppointmentTable = () => {
         /* Patient cell */
         .at-patient-cell { display: flex; align-items: center; gap: 10px; }
         .at-avatar {
-          width: 34px; height: 34px; border-radius: 50%; flex-shrink: 0;
-          background: linear-gradient(135deg, #c8d8f8, #d8e8ff);
-          color: #2E7DF7; font-size: 0.7rem; font-weight: 700;
+          width: 32px; height: 32px; border-radius: 50%; flex-shrink: 0;
+          background: #e8f0ff;
+          color: #2E7DF7; font-size: 0.8rem; font-weight: 700;
           display: flex; align-items: center; justify-content: center;
         }
         .at-patient-info { display: flex; flex-direction: column; gap: 2px; }
-        .at-patient-name { font-weight: 600; color: #1a1a2e; white-space: nowrap; font-size: 0.84rem; }
-        .at-patient-meta { font-size: 0.72rem; color: #9ca3af; white-space: nowrap; }
+        .at-patient-name { font-weight: 600; color: #1a1a2e; white-space: nowrap; font-size: 0.85rem; }
+        .at-patient-meta { font-size: 0.75rem; color: #6b7280; white-space: nowrap; }
 
         /* Type cell */
-        .at-type-cell { display: flex; flex-direction: column; gap: 3px; }
-        .at-type-badge {
-          display: inline-block; padding: 2px 10px;
-          border-radius: 20px; font-size: 0.72rem; font-weight: 600; width: fit-content;
+        .at-type-cell { display: flex; flex-direction: column; gap: 2px; }
+        .at-type-text {
+          font-size: 0.8rem; font-weight: 600; width: fit-content;
         }
-        .at-issue { font-size: 0.77rem; color: #6b7280; }
+        .at-issue { font-size: 0.75rem; color: #6b7280; }
 
         /* Status cell */
         .at-status-cell { display: flex; flex-direction: column; gap: 3px; }
         .at-status-badge {
           display: inline-block; padding: 3px 10px;
-          border-radius: 6px; font-size: 0.72rem; font-weight: 600; width: fit-content;
+          border-radius: 6px; font-size: 0.75rem; font-weight: 600; width: fit-content;
         }
 
         /* Actions */
         .at-actions-cell { display: flex; align-items: center; gap: 8px; white-space: nowrap; min-width: 170px; }
         .at-action-btn {
-          padding: 7px 12px; border-radius: 8px; font-size: 0.74rem;
+          padding: 6px 14px; border-radius: 6px; font-size: 0.75rem;
           font-weight: 600; cursor: pointer; transition: all 0.15s;
-          border: none; white-space: nowrap;
+          white-space: nowrap;
         }
-        .at-btn-primary { background: #EEF4FF; color: #2E7DF7; border: 1px solid #C5D8FF !important; }
-        .at-btn-primary:hover { background: #2E7DF7; color: #fff; }
+        .at-btn-outline { 
+          background: transparent; 
+          color: #2E7DF7; 
+          border: 1px solid #2E7DF7; 
+        }
+        .at-btn-outline:hover { background: #EEF4FF; }
         .at-more-btn {
           width: 30px; height: 30px; border-radius: 6px;
           border: 1px solid #e0e4ec; background: #fff;
@@ -345,9 +476,72 @@ const AppointmentTable = () => {
         }
         .at-more-btn:hover { background: #f0f4ff; color: #2E7DF7; }
 
-        /* State cells */
-        .at-state-cell { text-align: center; padding: 40px; color: #9ca3af; font-size: 0.85rem; }
-        .at-error { color: #E74C3C; }
+        /* ── Empty state ── */
+        .at-empty-state {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          padding: 60px 24px 48px;
+          flex: 1;
+          text-align: center;
+        }
+        .at-empty-icon-wrap {
+          width: 68px;
+          height: 68px;
+          border-radius: 50%;
+          background: linear-gradient(135deg, #34d399, #10b981);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          margin-bottom: 20px;
+          box-shadow: 0 8px 24px rgba(16, 185, 129, 0.25);
+        }
+        .at-empty-icon {
+          color: #fff;
+          font-size: 2rem;
+        }
+        .at-empty-title {
+          font-size: 1.25rem;
+          font-weight: 700;
+          color: #1a1a2e;
+          margin: 0 0 10px;
+        }
+        .at-empty-subtitle {
+          font-size: 0.85rem;
+          color: #6b7280;
+          max-width: 400px;
+          line-height: 1.6;
+          margin: 0 0 28px;
+        }
+        .at-empty-btn {
+          display: inline-flex;
+          align-items: center;
+          gap: 8px;
+          padding: 10px 24px;
+          border: 1.5px solid #2E7DF7;
+          border-radius: 8px;
+          background: transparent;
+          color: #2E7DF7;
+          font-size: 0.85rem;
+          font-weight: 600;
+          cursor: pointer;
+          transition: all 0.18s;
+        }
+        .at-empty-btn:hover {
+          background: #2E7DF7;
+          color: #fff;
+        }
+
+        /* ── Error state ── */
+        .at-error-state {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          padding: 48px 24px;
+          color: #E74C3C;
+          font-size: 0.88rem;
+        }
 
         /* Skeleton */
         .at-skel {
