@@ -6,8 +6,8 @@ const DashboardAPI = {
         return axiosInstance.get(`/dashboard/getSummary?userId=${userId}&apptDate=${apptDate}`);
     },
 
-    getDashboardAppointments: (apptDate, pageNo) =>
-        axiosInstance.get(`/dashboard/getAppointments?userId=1&apptDate=${apptDate}&pageNo=${pageNo}`),
+    getDashboardAppointments: (userId, apptDate, pageNo) =>
+        axiosInstance.get(`/dashboard/getAppointments?userId=${userId}&apptDate=${apptDate}&pageNo=${pageNo}`),
 
     getTeamList: (userId) => axiosInstance.get(`/dashboard/getTeamList?userId=${userId}`),
 };

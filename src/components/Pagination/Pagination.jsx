@@ -99,7 +99,7 @@ const Pagination = ({ currentPage, totalPages, onPageChange }) => {
           justify-content: flex-end;
           gap: 20px;
           padding: 14px 22px;
-          border-top: 1px solid #eef0f5;
+          // border-top: 1px solid #eef0f5;
         }
         .shared-pg-text-btn {
           display: flex;

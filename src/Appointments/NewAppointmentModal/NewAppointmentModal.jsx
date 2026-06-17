@@ -413,7 +413,7 @@ const NewAppointmentModal = ({ onClose, onSuccess }) => {
           justify-content: flex-end;
           gap: 16px;
           padding: 20px 32px;
-          border-top: 1px solid #eef0f5;
+          // border-top: 1px solid #eef0f5;
         }
         .nam-btn-cancel {
           padding: 10px 24px;

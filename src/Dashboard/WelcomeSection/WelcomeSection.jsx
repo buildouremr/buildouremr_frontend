@@ -2,7 +2,7 @@ import { useRef } from "react";
 import useWelcomeSection from "./useWelcomeSection";
 import { MdChevronLeft, MdChevronRight } from "react-icons/md";
 
-const WelcomeSection = ({ summaryData, summaryLoading, selectedDate, onDateChange }) => {
+const WelcomeSection = ({ summaryData, summaryLoading, selectedDate, onDateChange, onViewAll }) => {
   const { doctorName, visitCount, formattedDate } =
     useWelcomeSection(summaryData, summaryLoading, selectedDate);
 
@@ -33,7 +33,7 @@ const WelcomeSection = ({ summaryData, summaryLoading, selectedDate, onDateChang
           <h1 className="ws-title">Welcome, {doctorName}</h1>
           <p className="ws-subtitle">
             You have {visitCount} visits for this day,{" "}
-            <span className="ws-view-more">View More</span>
+            <span className="ws-view-more" onClick={onViewAll}>View More</span>
           </p>
         </div>
 

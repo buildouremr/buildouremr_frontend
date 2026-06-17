@@ -160,6 +160,9 @@ const PatientQueue = ({ selectedDate, onViewAll }) => {
 
         .pq-table-wrapper {
           overflow-x: auto;
+          margin: 0 22px;
+          border: 1px solid #e0e4ec;
+          border-radius: 8px;
         }
         .pq-table {
           width: 100%;
@@ -187,6 +190,9 @@ const PatientQueue = ({ selectedDate, onViewAll }) => {
         }
         .pq-table tbody tr:hover {
           background: #fafbfd;
+        }
+        .pq-table tbody tr:last-child td {
+          border-bottom: none;
         }
         .pq-id {
           font-weight: 500;

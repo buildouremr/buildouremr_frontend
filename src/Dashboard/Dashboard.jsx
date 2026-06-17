@@ -9,6 +9,7 @@ import TeamSection from "./TeamSection/TeamSection";
 import PatientsChart from "./PatientsChart/PatientsChart";
 import RevenueChart from "./RevenueChart/RevenueChart";
 import Appointments from "../Appointments/Appointments";
+import Patients from "../Patients/Patients";
 import useDashboard from "./useDashboard";
 import SessionTimeoutModal from "../components/SessionTimeoutModal";
 
@@ -37,6 +38,9 @@ const Dashboard = ({ onLogout }) => {
     if (activeMenu === "Appointments") {
       return <Appointments initialFilter={apptInitialFilter} />;
     }
+    if (activeMenu === "Patients") {
+      return <Patients />;
+    }
 
     // Default Dashboard Overview
     return (
@@ -46,6 +50,7 @@ const Dashboard = ({ onLogout }) => {
           summaryLoading={summaryLoading}
           selectedDate={selectedDate}
           onDateChange={handleDateChange}
+          onViewAll={() => goToAppointments("All Appointments")}
         />
         <StatsCards
           summaryData={summaryData}

@@ -79,11 +79,11 @@ const PatientDetailPanel = ({ patient, loading, onClose }) => {
     patient.apptSessionType === "Follow-up" ||
     patient.apptSessionType === "Follow up";
   const typeColor = typeIsFollowUp ? "#0D9B5C" : "#2E7DF7";
-  const typeBg    = typeIsFollowUp ? "#E8F8F0"  : "#E8F0FF";
+  const typeBg = typeIsFollowUp ? "#E8F8F0" : "#E8F0FF";
 
   const genderFull = patient.gender === "M" ? "Male"
     : patient.gender === "F" ? "Female"
-    : patient.gender || "—";
+      : patient.gender || "—";
 
   return (
     <>
@@ -249,7 +249,7 @@ const PatientDetailPanel = ({ patient, loading, onClose }) => {
         .pdp-case-text { font-size: 0.82rem; color: #374151; }
 
         /* Footer */
-        .pdp-footer { padding: 14px 16px; border-top: 1px solid #eef0f5; }
+        .pdp-footer { padding: 14px 16px; //border-top: 1px solid #eef0f5; }
         .pdp-cta-btn {
           width: 100%; padding: 13px;
           background: #2E7DF7; color: #fff;

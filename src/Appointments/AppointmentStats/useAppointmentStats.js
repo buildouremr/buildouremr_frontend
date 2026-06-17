@@ -19,7 +19,7 @@ const useAppointmentStats = (selectedDate) => {
     setLoading(true);
     setError(null);
     try {
-      const userId = localStorage.getItem("userId") || 1;
+      const userId = localStorage.getItem("userId");
       const dateStr = selectedDate ? formatDate(selectedDate) : null;
       const res = await AppointmentsAPI.getAppointmentStatusCounts(userId, dateStr);
       setCounts(res.data?.data ?? null);

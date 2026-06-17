@@ -11,12 +11,12 @@ const MIN_ROWS = 3;
 
 const getStatusStyle = (status) => {
   switch (status) {
-    case "Waiting":   return { color: "#F59E0B", bg: "#FFF8E8" };
+    case "Waiting": return { color: "#F59E0B", bg: "#FFF8E8" };
     case "Completed": return { color: "#0D9B5C", bg: "#E8F8F0" };
     case "Cancelled": return { color: "#E74C3C", bg: "#FFE8E8" };
-    case "Pending":   return { color: "#2E7DF7", bg: "#E8F0FF" };
-    case "No Show":   return { color: "#6b7280", bg: "#f0f2f5" };
-    default:          return { color: "#6b7280", bg: "#f0f2f5" };
+    case "Pending": return { color: "#2E7DF7", bg: "#E8F0FF" };
+    case "No Show": return { color: "#6b7280", bg: "#f0f2f5" };
+    default: return { color: "#6b7280", bg: "#f0f2f5" };
   }
 };
 
@@ -165,8 +165,8 @@ const AppointmentTable = ({ selectedDate, currentPage, onPageChange, onNextDay, 
                   <tbody>
                     {pageAppointments.map((appt, i) => {
                       const statusStyle = getStatusStyle(appt.status);
-                      const typeColor   = (appt.type === "Follow-up" || appt.type === "Follow up") ? "#0D9B5C" : "#2E7DF7";
-                      const isSelected  = selectedApptId === appt.apptId;
+                      const typeColor = (appt.type === "Follow-up" || appt.type === "Follow up") ? "#0D9B5C" : "#2E7DF7";
+                      const isSelected = selectedApptId === appt.apptId;
 
                       return (
                         <tr
@@ -374,7 +374,15 @@ const AppointmentTable = ({ selectedDate, currentPage, onPageChange, onNextDay, 
         .at-search-input::placeholder { color: #9ca3af; }
 
         /* ── Table ── */
-        .at-table-wrap { overflow-x: auto; overflow-y: hidden; flex: 1; min-height: 0; }
+        .at-table-wrap { 
+          overflow-x: auto; 
+          overflow-y: hidden; 
+          flex: 1; 
+          min-height: 0; 
+          margin: 0 20px 5px 20px;
+          border: 1px solid #e0e4ec;
+          border-radius: 8px;
+        }
         .at-table {
           width: 100%;
           border-collapse: collapse;
@@ -555,6 +563,7 @@ const AppointmentTable = ({ selectedDate, currentPage, onPageChange, onNextDay, 
           100% { background-position: -200% 0; }
         }
         .at-skeleton-row td { padding: 18px 16px; }
+        .at-skeleton-row:last-child td { border-bottom: none; }
       `}</style>
     </>
   );

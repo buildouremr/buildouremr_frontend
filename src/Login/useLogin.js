@@ -52,10 +52,15 @@ const useLogin = (onLoginSuccess) => {
         password: password
       });
 
-      const token = response?.data?.data;
+      const responseData = response?.data?.data;
+      const token = responseData?.token;
+      const userId = responseData?.userId;
 
       if (token && !token.includes("INVALID")) {
         localStorage.setItem("token", token);
+        if (userId) {
+          localStorage.setItem("userId", userId);
+        }
 
         // ✅ Always call this
         onLoginSuccess && onLoginSuccess();

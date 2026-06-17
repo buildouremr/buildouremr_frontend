@@ -33,10 +33,11 @@ const useTeamSection = () => {
   };
 
   const meth = {
-    fetchTeamList: async (userId = 1) => {
+    fetchTeamList: async () => {
       setLoading(true);
       setError(null);
       try {
+        const userId = localStorage.getItem("userId");
         const res = await DashboardAPI.getTeamList(userId);
         const raw = res.data?.data ?? [];
         setTeamMembers(raw.map(mapMember));

@@ -49,7 +49,7 @@ const useDashboard = () => {
     setSummaryLoading(true);
     setSummaryError(null);
     try {
-      const userId = localStorage.getItem("userId") || 1;
+      const userId = localStorage.getItem("userId");
       const res = await DashboardAPI.getDashboardSummary(userId, date);
       setSummaryData(res.data?.data ?? null);
     } catch (err) {

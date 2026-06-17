@@ -50,7 +50,8 @@ const mapAppointment = (appt) => ({
   doctorName: appt.providerName ?? "—",
   status: appt.status ?? "—",
   ptType: appt.patientType ?? "—",
-  dateTime: `${formatDate(appt.appointmentDate)}, ${formatTime(appt.startTime)} to ${formatTime(appt.endTime)}`,
+  startTime: formatTime(appt.startTime),
+  dateTime: `${formatDate(appt.appointmentDate)}, ${formatTime(appt.startTime)}`,
   caseDetails: appt.reason ?? "—",
 });
 
@@ -81,8 +82,9 @@ const usePatientQueue = (selectedDate, onViewAll) => {
     setLoading(true);
     setError(null);
     try {
+      const userId = localStorage.getItem("userId");
       const apptDate = formatDateForAPI(date || new Date());
-      const res = await DashboardAPI.getDashboardAppointments(apptDate, apiPage);
+      const res = await DashboardAPI.getDashboardAppointments(userId, apptDate, apiPage);
       const raw = res.data?.data ?? [];
       cacheRef.current[apiPage] = raw.map(mapAppointment);
 
