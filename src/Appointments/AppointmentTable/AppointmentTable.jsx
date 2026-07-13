@@ -42,7 +42,7 @@ const EmptyRow = () => (
   </tr>
 );
 
-const AppointmentTable = ({ selectedDate, currentPage, onPageChange, onNextDay, externalActiveTab }) => {
+const AppointmentTable = ({ selectedDate, currentPage, onPageChange, onNextDay, externalActiveTab, refreshKey }) => {
   // ── Dynamic row count based on container height ──────────────────────
   const observerRef = useRef(null);
   const [rowsPerPage, setRowsPerPage] = useState(10);
@@ -70,7 +70,14 @@ const AppointmentTable = ({ selectedDate, currentPage, onPageChange, onNextDay, 
     searchQuery, totalPages,
     handleTabChange, handleSelectPatient, handleClosePanel,
     handleStartConsultation, handleSearchChange,
+    fetchAppointments,
   } = useAppointmentTable({ selectedDate, currentPage, onPageChange, externalActiveTab, rowsPerPage });
+
+  // Re-fetch whenever parent increments refreshKey after booking
+  useEffect(() => {
+    if (refreshKey && refreshKey > 0) fetchAppointments();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [refreshKey]);
 
   const emptyRowCount = loading || error || pageAppointments.length === 0
     ? 0
@@ -102,7 +109,6 @@ const AppointmentTable = ({ selectedDate, currentPage, onPageChange, onNextDay, 
               <span className="at-queue-title">In Patients Queue</span>
               {hasAppointments && (
                 <div className="at-search-wrap">
-                  <MdSearch className="at-search-icon" />
                   <input
                     type="text"
                     className="at-search-input"
@@ -110,6 +116,7 @@ const AppointmentTable = ({ selectedDate, currentPage, onPageChange, onNextDay, 
                     value={searchQuery}
                     onChange={(e) => handleSearchChange(e.target.value)}
                   />
+                  <MdSearch className="at-search-icon" />
                 </div>
               )}
             </div>
@@ -118,6 +125,13 @@ const AppointmentTable = ({ selectedDate, currentPage, onPageChange, onNextDay, 
             {loading ? (
               <div className="at-table-wrap at-table-fixed" ref={tableBodyRef}>
                 <table className="at-table">
+                  <colgroup>
+                    <col style={{ width: "120px" }} />
+                    <col style={{ width: "200px" }} />
+                    <col style={{ width: "180px" }} />
+                    <col style={{ width: "130px" }} />
+                    <col style={{ width: "190px" }} />
+                  </colgroup>
                   <thead>
                     <tr>
                       <th>Time</th><th>Patient</th><th>Type / Issue</th><th>Status</th><th>Action</th>
@@ -153,6 +167,13 @@ const AppointmentTable = ({ selectedDate, currentPage, onPageChange, onNextDay, 
             ) : (
               <div className="at-table-wrap at-table-fixed" ref={tableBodyRef}>
                 <table className="at-table">
+                  <colgroup>
+                    <col style={{ width: "120px" }} />
+                    <col style={{ width: "200px" }} />
+                    <col style={{ width: "180px" }} />
+                    <col style={{ width: "130px" }} />
+                    <col style={{ width: "190px" }} />
+                  </colgroup>
                   <thead>
                     <tr>
                       <th>Time</th>
@@ -360,16 +381,16 @@ const AppointmentTable = ({ selectedDate, currentPage, onPageChange, onNextDay, 
         .at-search-wrap {
           display: flex;
           align-items: center;
-          gap: 6px;
-          background: #f8fafc;
+          gap: 8px;
+          background: #fff;
           border: 1px solid #e0e4ec;
           border-radius: 8px;
           padding: 7px 12px;
         }
-        .at-search-icon { color: #9ca3af; font-size: 1rem; flex-shrink: 0; }
+        .at-search-icon { color: #9ca3af; font-size: 1.1rem; flex-shrink: 0; }
         .at-search-input {
           border: none; background: transparent; outline: none;
-          font-size: 0.82rem; color: #1a1a2e; width: 140px;
+          font-size: 0.85rem; color: #1a1a2e; width: 180px;
         }
         .at-search-input::placeholder { color: #9ca3af; }
 
@@ -387,6 +408,7 @@ const AppointmentTable = ({ selectedDate, currentPage, onPageChange, onNextDay, 
           width: 100%;
           border-collapse: collapse;
           font-size: 0.85rem;
+          table-layout: fixed;
         }
         .at-table thead tr { background: #f8fafc; }
         .at-table th {

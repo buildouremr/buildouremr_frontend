@@ -1,12 +1,25 @@
-import { useRef } from "react";
+
 import useWelcomeSection from "./useWelcomeSection";
 import { MdChevronLeft, MdChevronRight } from "react-icons/md";
+import DatePicker from "../../components/DatePicker/DatePicker";
 
 const WelcomeSection = ({ summaryData, summaryLoading, selectedDate, onDateChange, onViewAll }) => {
   const { doctorName, visitCount, formattedDate } =
     useWelcomeSection(summaryData, summaryLoading, selectedDate);
 
-  const dateInputRef = useRef(null);
+  const toISO = (d) => {
+    if (!d) return "";
+    const dt = d instanceof Date ? d : new Date(d);
+    if (isNaN(dt)) return "";
+    return `${dt.getFullYear()}-${String(dt.getMonth() + 1).padStart(2, "0")}-${String(dt.getDate()).padStart(2, "0")}`;
+  };
+
+  const handlePickerChange = (isoStr) => {
+    if (!isoStr) return;
+    const d = new Date(isoStr);
+    d.setHours(0, 0, 0, 0);
+    onDateChange(d);
+  };
 
   const handlePrev = () => {
     const next = new Date(selectedDate);
@@ -20,12 +33,6 @@ const WelcomeSection = ({ summaryData, summaryLoading, selectedDate, onDateChang
     onDateChange(next);
   };
 
-  const handleDateInput = (e) => {
-    if (!e.target.value) return;
-    const [year, month, day] = e.target.value.split("-").map(Number);
-    onDateChange(new Date(year, month - 1, day));
-  };
-
   return (
     <>
       <div className="ws-container">
@@ -37,27 +44,28 @@ const WelcomeSection = ({ summaryData, summaryLoading, selectedDate, onDateChang
           </p>
         </div>
 
-        {/* Date Navigator — same style as AppointmentHeader */}
-        <div className="ws-date-nav" onClick={() => dateInputRef.current?.showPicker()}>
+        {/* Date Navigator — uses custom DatePicker, icon hidden, calendar opens on label click */}
+        <div className="ws-date-nav">
           <button
             className="ws-nav-btn"
             onClick={(e) => { e.stopPropagation(); handlePrev(); }}
           >
             <MdChevronLeft />
           </button>
-          <span className="ws-date-label">{formattedDate}</span>
+          <div className="ws-picker-wrap">
+            <span className="ws-date-label">{formattedDate}</span>
+            <DatePicker
+              value={toISO(selectedDate)}
+              onChange={handlePickerChange}
+              id="ws-date-picker"
+            />
+          </div>
           <button
             className="ws-nav-btn"
             onClick={(e) => { e.stopPropagation(); handleNext(); }}
           >
             <MdChevronRight />
           </button>
-          <input
-            type="date"
-            ref={dateInputRef}
-            className="ws-hidden-date"
-            onChange={handleDateInput}
-          />
         </div>
       </div>
 
@@ -88,16 +96,14 @@ const WelcomeSection = ({ summaryData, summaryLoading, selectedDate, onDateChang
           text-decoration: underline;
         }
 
-        /* Date navigator */
         .ws-date-nav {
           display: flex;
           align-items: center;
           gap: 0;
           border: 1px solid #e0e4ec;
           border-radius: 8px;
-          overflow: hidden;
+          overflow: visible;
           background: #fff;
-          cursor: pointer;
           position: relative;
         }
         .ws-nav-btn {
@@ -114,22 +120,37 @@ const WelcomeSection = ({ summaryData, summaryLoading, selectedDate, onDateChang
           transition: background 0.15s;
         }
         .ws-nav-btn:hover { background: #f0f4ff; color: #2E7DF7; }
+        .ws-picker-wrap {
+          display: flex;
+          align-items: center;
+          border-left: 1px solid #e0e4ec;
+          border-right: 1px solid #e0e4ec;
+          position: relative;
+        }
         .ws-date-label {
-          padding: 0 14px;
+          padding: 0 10px;
           font-size: 0.87rem;
           font-weight: 600;
           color: #1a1a2e;
           white-space: nowrap;
-          border-left: 1px solid #e0e4ec;
-          border-right: 1px solid #e0e4ec;
           line-height: 34px;
+          user-select: none;
         }
-        .ws-hidden-date {
-          position: absolute;
-          opacity: 0;
-          width: 0;
-          height: 0;
-          pointer-events: none;
+        /* Hide the dp-display text; keep calendar icon as trigger */
+        #ws-date-picker .dp-wrap { position: static; }
+        #ws-date-picker .dp-trigger {
+          border: none;
+          background: transparent;
+          padding: 0 8px 0 0;
+          height: 34px;
+          border-radius: 0;
+        }
+        #ws-date-picker .dp-trigger:hover { background: #f0f4ff; }
+        #ws-date-picker .dp-display { display: none; }
+        #ws-date-picker .dp-calendar {
+          left: auto;
+          right: 0;
+          top: calc(100% + 8px);
         }
       `}</style>
     </>

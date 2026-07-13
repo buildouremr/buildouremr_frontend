@@ -5,27 +5,34 @@ const TABS = ["All Patients", "My Patients", "Active Patients", "Inactive Patien
 
 const usePatientTable = ({ rowsPerPage }) => {
   const [patients, setPatients] = useState([]);
+  const [chronicDiseases, setChronicDiseases] = useState([]);
+  const [selectedDiseases, setSelectedDiseases] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [activeTab, setActiveTab] = useState("All Patients");
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
 
-  const fetchPatients = async () => {
+  const fetchPatientsAndDiseases = async () => {
     setLoading(true);
     setError(null);
     try {
-      const res = await PatientsAPI.getAllPatients();
-      setPatients(res.data?.data ?? []);
+      const [patientsRes, diseasesRes] = await Promise.all([
+        PatientsAPI.getAllPatients(),
+        PatientsAPI.getChronicDiseases()
+      ]);
+      setPatients(patientsRes.data?.data ?? []);
+      const diseases = diseasesRes.data?.data ?? [];
+      setChronicDiseases(diseases.map(d => ({ value: d.chronicDiseaseName, label: d.chronicDiseaseName })));
     } catch (err) {
-      setError(err?.message || "Failed to load patients");
+      setError(err?.message || "Failed to load data");
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchPatients();
+    fetchPatientsAndDiseases();
   }, []);
 
   const filteredPatients = useMemo(() => {
@@ -38,6 +45,10 @@ const usePatientTable = ({ rowsPerPage }) => {
     } else if (activeTab === "My Patients") {
       const loggedInUserId = Number(localStorage.getItem("userId"));
       list = list.filter((p) => Number(p.principalDoctorId) === loggedInUserId);
+    }
+
+    if (selectedDiseases.length > 0) {
+      list = list.filter((p) => selectedDiseases.includes(p.patientRegistrationChronic));
     }
 
     if (searchQuery.trim()) {
@@ -56,7 +67,7 @@ const usePatientTable = ({ rowsPerPage }) => {
       });
     }
     return list;
-  }, [patients, activeTab, searchQuery]);
+  }, [patients, activeTab, searchQuery, selectedDiseases]);
 
   const safeRowsPerPage = Math.max(rowsPerPage || 10, 1);
   const totalPages = Math.max(1, Math.ceil(filteredPatients.length / safeRowsPerPage));
@@ -92,6 +103,9 @@ const usePatientTable = ({ rowsPerPage }) => {
     patients,
     filteredPatients,
     pagePatients,
+    chronicDiseases,
+    selectedDiseases,
+    setSelectedDiseases,
     tabs: TABS,
     tabCounts,
     activeTab,

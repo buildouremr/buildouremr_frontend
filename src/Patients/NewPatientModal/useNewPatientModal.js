@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
-import AppointmentsAPI from "../API/appointmentsAPI";
+import AppointmentsAPI from "../../Appointments/API/appointmentsAPI";
 
 const generateSlots = () => {
   const slots = [];
@@ -16,13 +16,17 @@ const generateSlots = () => {
 
 const MOCK_SLOTS = generateSlots();
 
-const useNewAppointmentModal = ({ onClose, onSuccess, onError }) => {
+const useNewPatientModal = ({ onClose, onSuccess, onError }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
   const [doctors, setDoctors] = useState([]);
   const [appointmentTypes, setAppointmentTypes] = useState([]);
+  // Results for full-name search bar
+  const [fullNameSearchResults, setFullNameSearchResults] = useState([]);
+  // Results for first/last name field inline search
   const [patientSearchResults, setPatientSearchResults] = useState([]);
+  const [isSearchingPatient, setIsSearchingPatient] = useState(false);
 
   useEffect(() => {
     AppointmentsAPI.getCreateApptDetails()
@@ -37,26 +41,57 @@ const useNewAppointmentModal = ({ onClose, onSuccess, onError }) => {
 
   const [formData, setFormData] = useState({
     patientType: "Existing Patient",
+    patientId: "",
+    fullName: "",
     firstName: "",
     lastName: "",
     phoneNumber: "",
     email: "",
     dateOfBirth: "",
     gender: "",
+    emergencyContact: "",
     location: "",
-    chronicDisease: "",
+    chiefComplaint: "",
+    knownAllergies: [],
+    chronicHistory: [],
     doctorId: "",
     appointmentDate: "",
     appointmentTime: "",
-    appointmentTypeId: "",
-    chiefComplaint: "",
   });
 
   const handleChange = (field, value) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
-  // Called when user types in First Name or Last Name — triggers patient search
+  const addTag = (field, val) => {
+    if (!formData[field].includes(val)) {
+      setFormData((prev) => ({ ...prev, [field]: [...prev[field], val] }));
+    }
+  };
+
+  const removeTag = (field, idx) => {
+    setFormData((prev) => ({ ...prev, [field]: prev[field].filter((_, i) => i !== idx) }));
+  };
+
+  // Full-name search bar handler
+  const handleSearchPatient = async (query) => {
+    setFormData((prev) => ({ ...prev, fullName: query, patientId: "" }));
+    if (!query || query.length < 2) {
+      setFullNameSearchResults([]);
+      return;
+    }
+    setIsSearchingPatient(true);
+    try {
+      const res = await AppointmentsAPI.getPatients(query);
+      setFullNameSearchResults(res.data?.data || []);
+    } catch {
+      setFullNameSearchResults([]);
+    } finally {
+      setIsSearchingPatient(false);
+    }
+  };
+
+  // First/Last name field handler — searches API with combined name
   const handleSearchByName = useCallback(async (field, value) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
     const combined = field === "firstName"
@@ -81,15 +116,33 @@ const useNewAppointmentModal = ({ onClose, onSuccess, onError }) => {
     else if (patient.patientGender) gender = "Other";
 
     const nameParts = (patient.patientName || "").split(" ");
+
     setFormData((prev) => ({
       ...prev,
+      patientId: patient.patientId ?? "",
+      fullName: patient.patientName || "",
       firstName: nameParts[0] || "",
       lastName: nameParts.slice(1).join(" ") || "",
-      phoneNumber: patient.patientMobileNo || "",
       dateOfBirth: patient.patientDob || "",
+      phoneNumber: patient.patientMobileNo || "",
       gender,
     }));
     setPatientSearchResults([]);
+    setFullNameSearchResults([]);
+  };
+
+  // "Create New" button clicked — splits the query into first/last name
+  const handleCreateNew = (query) => {
+    const parts = (query || "").trim().split(" ");
+    setFormData((prev) => ({
+      ...prev,
+      firstName: parts[0] || "",
+      lastName: parts.slice(1).join(" ") || "",
+      fullName: "",
+      patientType: "New Patient",
+    }));
+    setPatientSearchResults([]);
+    setFullNameSearchResults([]);
   };
 
   const availableSlots = useMemo(() => {
@@ -101,9 +154,9 @@ const useNewAppointmentModal = ({ onClose, onSuccess, onError }) => {
     return (
       formData.firstName || formData.lastName || formData.phoneNumber ||
       formData.email || formData.dateOfBirth || formData.gender ||
-      formData.location || formData.chronicDisease ||
-      formData.doctorId || formData.appointmentDate || formData.appointmentTime ||
-      formData.appointmentTypeId || formData.chiefComplaint
+      formData.emergencyContact || formData.location || formData.chiefComplaint ||
+      formData.knownAllergies.length > 0 || formData.chronicHistory.length > 0 ||
+      formData.doctorId || formData.appointmentDate || formData.appointmentTime
     );
   };
 
@@ -118,13 +171,17 @@ const useNewAppointmentModal = ({ onClose, onSuccess, onError }) => {
       email: formData.email,
       dateOfBirth: formData.dateOfBirth,
       gender: formData.gender,
+      emergencyContact: formData.emergencyContact,
       location: formData.location,
-      chronicDisease: formData.chronicDisease,
+      chiefComplaint: formData.chiefComplaint,
+      knownAllergies: formData.knownAllergies,
+      chronicHistory: formData.chronicHistory,
       providerId: formData.doctorId ? parseInt(formData.doctorId, 10) : null,
       appointmentDate: formData.appointmentDate,
       appointmentTime: formData.appointmentTime,
-      appointmentTypeId: formData.appointmentTypeId ? parseInt(formData.appointmentTypeId, 10) : null,
-      chiefComplaint: formData.chiefComplaint,
+      ...(formData.patientType === "Existing Patient" && formData.patientId
+        ? { patientId: parseInt(formData.patientId, 10) }
+        : {}),
     };
 
     try {
@@ -144,9 +201,15 @@ const useNewAppointmentModal = ({ onClose, onSuccess, onError }) => {
   return {
     formData,
     handleChange,
+    addTag,
+    removeTag,
+    handleSearchPatient,
     handleSearchByName,
     handleSelectPatient,
+    handleCreateNew,
     patientSearchResults,
+    fullNameSearchResults,
+    isSearchingPatient,
     handleSubmit,
     loading,
     error,
@@ -157,4 +220,4 @@ const useNewAppointmentModal = ({ onClose, onSuccess, onError }) => {
   };
 };
 
-export default useNewAppointmentModal;
+export default useNewPatientModal;

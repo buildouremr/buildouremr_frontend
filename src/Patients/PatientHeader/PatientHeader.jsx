@@ -1,12 +1,12 @@
 import { MdAdd } from "react-icons/md";
 
-const PatientHeader = () => {
+const PatientHeader = ({ onCreatePatient }) => {
   return (
     <>
       <div className="ph-container">
         <h1 className="ph-title">Patients</h1>
         <div className="ph-right">
-          <button className="ph-new-btn">
+          <button className="ph-new-btn" onClick={onCreatePatient}>
             <MdAdd style={{ fontSize: "1.1rem" }} />
             <span>Create Patient</span>
           </button>

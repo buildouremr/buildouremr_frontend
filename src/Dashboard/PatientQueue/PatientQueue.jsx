@@ -52,6 +52,16 @@ const PatientQueue = ({ selectedDate, onViewAll }) => {
           /* Fixed-height table area — always shows 10 row slots */
           <div className="pq-fixed-area pq-table-wrapper">
             <table className="pq-table">
+              <colgroup>
+                <col style={{ width: "80px" }} />
+                <col style={{ width: "160px" }} />
+                <col style={{ width: "120px" }} />
+                <col style={{ width: "160px" }} />
+                <col style={{ width: "100px" }} />
+                <col style={{ width: "80px" }} />
+                <col style={{ width: "140px" }} />
+                <col style={{ width: "180px" }} />
+              </colgroup>
               <thead>
                 <tr>
                   <th>Patient ID</th>
@@ -168,6 +178,7 @@ const PatientQueue = ({ selectedDate, onViewAll }) => {
           width: 100%;
           border-collapse: collapse;
           font-size: 0.82rem;
+          table-layout: fixed;
         }
         .pq-table thead tr {
           background: #f0f4fa;

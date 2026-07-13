@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useCallback } from "react";
 
 const IDLE_TIME = 10 * 60 * 1000; // 10 min
 const WARNING_TIME = 60 * 1000;   // 1 min
@@ -8,7 +8,7 @@ export default function useIdleTimer(onLogout, onShowWarning) {
     const idleTimer = useRef(null);
     const logoutTimer = useRef(null);
 
-    const resetTimers = () => {
+    const resetTimers = useCallback(() => {
 
         clearTimeout(idleTimer.current);
         clearTimeout(logoutTimer.current);
@@ -26,7 +26,7 @@ export default function useIdleTimer(onLogout, onShowWarning) {
             }, WARNING_TIME);
 
         }, IDLE_TIME);
-    };
+    }, [onShowWarning, onLogout]);
 
     useEffect(() => {
 
@@ -54,7 +54,7 @@ export default function useIdleTimer(onLogout, onShowWarning) {
             );
         };
 
-    }, []);
+    }, [resetTimers]);
 
     return resetTimers;
 }

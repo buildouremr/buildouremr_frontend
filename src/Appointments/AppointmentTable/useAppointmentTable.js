@@ -229,6 +229,14 @@ const useAppointmentTable = ({
   const handleSearchChange = (q) => { setSearchQuery(q); onPageChange(1); };
   const handleStartConsultation = (appt) => console.log("Start consultation:", appt.patientId);
 
+  /** Reset cache + re-fetch page 1 (used after booking an appointment) */
+  const fetchAppointments = () => {
+    cacheRef.current = {};
+    setTotalRecords(0);
+    onPageChange(1);
+    fetchApiPage(selectedDate, 1);
+  };
+
   return {
     appointments,
     filteredAppointments,
@@ -249,7 +257,7 @@ const useAppointmentTable = ({
     handleClosePanel,
     handleSearchChange,
     handleStartConsultation,
-    fetchAppointments: () => fetchApiPage(selectedDate, 1),
+    fetchAppointments,
     onPageChange,
   };
 };

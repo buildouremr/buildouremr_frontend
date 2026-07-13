@@ -1,13 +1,21 @@
+import { useState } from "react";
 import PatientHeader from "./PatientHeader/PatientHeader";
 import PatientTable from "./PatientTable/PatientTable";
+import NewPatientModal from "./NewPatientModal/NewPatientModal";
 
 const Patients = () => {
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
   return (
     <>
       <div className="pt-page">
-        <PatientHeader />
+        <PatientHeader onCreatePatient={() => setIsModalOpen(true)} />
         <PatientTable />
       </div>
+
+      {isModalOpen && (
+        <NewPatientModal onClose={() => setIsModalOpen(false)} />
+      )}
 
       <style>{`
         .pt-page {

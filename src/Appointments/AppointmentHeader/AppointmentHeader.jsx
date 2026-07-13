@@ -1,16 +1,29 @@
-import { useRef } from "react";
 import useAppointmentHeader from "./useAppointmentHeader";
 import { MdChevronLeft, MdChevronRight, MdAdd } from "react-icons/md";
+import DatePicker from "../../components/DatePicker/DatePicker";
+
+const toISO = (d) => {
+  const dt = d instanceof Date ? d : new Date(d);
+  if (isNaN(dt)) return "";
+  return `${dt.getFullYear()}-${String(dt.getMonth() + 1).padStart(2, "0")}-${String(dt.getDate()).padStart(2, "0")}`;
+};
 
 const AppointmentHeader = ({ selectedDate, onDateChange, onNewAppointment }) => {
   const {
     formattedDate,
     handlePrev, handleNext,
     handleNewAppointment,
-    handleDateChange,
   } = useAppointmentHeader({ selectedDate, onDateChange, onNewAppointment });
 
-  const dateInputRef = useRef(null);
+  // DatePicker works with ISO strings; convert the Date object to ISO
+  const isoValue = toISO(selectedDate);
+
+  const handlePickerChange = (isoStr) => {
+    if (!isoStr) return;
+    const d = new Date(isoStr);
+    d.setHours(0, 0, 0, 0);
+    if (onDateChange) onDateChange(d);
+  };
 
   return (
     <>
@@ -23,26 +36,30 @@ const AppointmentHeader = ({ selectedDate, onDateChange, onNewAppointment }) => 
           </button>
 
           {/* Date Navigator */}
-          <div className="ah-date-nav" onClick={() => dateInputRef.current?.showPicker()}>
+          <div className="ah-date-nav">
             <button
               className="ah-nav-btn"
               onClick={(e) => { e.stopPropagation(); handlePrev(); }}
             >
               <MdChevronLeft />
             </button>
-            <span className="ah-date-label">{formattedDate}</span>
+
+            {/* Custom DatePicker — trigger shows formatted label, picker opens on calendar icon click */}
+            <div className="ah-picker-wrap">
+              <span className="ah-date-label">{formattedDate}</span>
+              <DatePicker
+                value={isoValue}
+                onChange={handlePickerChange}
+                id="ah-date-picker"
+              />
+            </div>
+
             <button
               className="ah-nav-btn"
               onClick={(e) => { e.stopPropagation(); handleNext(); }}
             >
               <MdChevronRight />
             </button>
-            <input
-              type="date"
-              ref={dateInputRef}
-              className="ah-hidden-date"
-              onChange={(e) => handleDateChange(e.target.value)}
-            />
           </div>
         </div>
       </div>
@@ -81,20 +98,19 @@ const AppointmentHeader = ({ selectedDate, onDateChange, onNewAppointment }) => 
           white-space: nowrap;
         }
         .ah-new-btn:hover { background: #1b65d4; }
+
+        /* Date Navigator */
         .ah-date-nav {
           display: flex;
           align-items: center;
-          gap: 0;
           border: 1px solid #e0e4ec;
           border-radius: 8px;
-          overflow: hidden;
+          overflow: visible;
           background: #fff;
-          cursor: pointer;
-          position: relative;
         }
         .ah-nav-btn {
           width: 32px;
-          height: 34px;
+          height: 36px;
           border: none;
           background: transparent;
           display: flex;
@@ -104,24 +120,42 @@ const AppointmentHeader = ({ selectedDate, onDateChange, onNewAppointment }) => 
           font-size: 1.15rem;
           color: #4b5563;
           transition: background 0.15s;
+          flex-shrink: 0;
         }
         .ah-nav-btn:hover { background: #f0f4ff; color: #2E7DF7; }
+
+        .ah-picker-wrap {
+          display: flex;
+          align-items: center;
+          border-left: 1px solid #e0e4ec;
+          border-right: 1px solid #e0e4ec;
+          position: relative;
+        }
         .ah-date-label {
-          padding: 0 14px;
+          padding: 0 10px;
           font-size: 0.87rem;
           font-weight: 600;
           color: #1a1a2e;
           white-space: nowrap;
-          border-left: 1px solid #e0e4ec;
-          border-right: 1px solid #e0e4ec;
-          line-height: 34px;
+          line-height: 36px;
+          user-select: none;
         }
-        .ah-hidden-date {
-          position: absolute;
-          opacity: 0;
-          width: 0;
-          height: 0;
-          pointer-events: none;
+
+        /* Override DatePicker trigger for compact header use */
+        #ah-date-picker .dp-wrap { position: static; }
+        #ah-date-picker .dp-trigger {
+          border: none;
+          background: transparent;
+          padding: 0 8px 0 0;
+          height: 36px;
+          border-radius: 0;
+        }
+        #ah-date-picker .dp-trigger:hover { background: #f0f4ff; }
+        #ah-date-picker .dp-display { display: none; }
+        #ah-date-picker .dp-calendar {
+          left: auto;
+          right: 0;
+          top: calc(100% + 8px);
         }
       `}</style>
     </>

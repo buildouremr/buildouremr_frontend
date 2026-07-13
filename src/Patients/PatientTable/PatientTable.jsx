@@ -2,6 +2,7 @@ import usePatientTable from "./usePatientTable";
 import { useState, useRef, useCallback } from "react";
 import { MdMoreVert, MdSearch, MdOutlineEmail, MdOutlinePhone } from "react-icons/md";
 import Pagination from "../../components/Pagination/Pagination";
+import FilterDropdown from "../../components/Dropdown/FilterDropdown";
 
 // Height of a single data row (must match .pt-table td height in CSS below)
 const ROW_HEIGHT = 65;
@@ -41,6 +42,20 @@ const formatPatientId = (id) => {
   return `PT${String(id).padStart(4, '0')}`;
 };
 
+const getChronicBadgeStyle = (diseaseName) => {
+  if (!diseaseName) return { color: '#6b7280', background: '#f0f2f5' };
+  
+  const nameLower = diseaseName.toLowerCase();
+  if (nameLower.includes('diabetes')) return { color: '#E74C3C', background: '#FFE8E8' };
+  if (nameLower.includes('thyroid') || nameLower.includes('hypothyroidism')) return { color: '#ef4444', background: '#fef2f2' };
+  if (nameLower.includes('hypercholesterolemia') || nameLower.includes('hyperlipidemia')) return { color: '#8b5cf6', background: '#f3e8ff' };
+  if (nameLower.includes('asthma') || nameLower.includes('pulmonary')) return { color: '#0ea5e9', background: '#e0f2fe' };
+  if (nameLower.includes('hypertension')) return { color: '#f59e0b', background: '#fef3c7' };
+  
+  // Default fallback for other diseases
+  return { color: '#0D9B5C', background: '#E8F8F0' };
+};
+
 const PatientTable = () => {
   const observerRef = useRef(null);
   const [rowsPerPage, setRowsPerPage] = useState(10);
@@ -62,6 +77,7 @@ const PatientTable = () => {
 
   const {
     pagePatients, tabs, tabCounts, activeTab,
+    chronicDiseases, selectedDiseases, setSelectedDiseases,
     loading, error, searchQuery, totalPages, currentPage,
     handleTabChange, handleSearchChange, handlePageChange
   } = usePatientTable({ rowsPerPage });
@@ -98,10 +114,12 @@ const PatientTable = () => {
               <span className="pt-queue-title">In Patients Queue</span>
               <div className="pt-queue-actions">
                 <div className="pt-filter-wrap">
-                  <span className="pt-filter-label">Filter by</span>
-                  <select className="pt-filter-select">
-                    <option value="">All</option>
-                  </select>
+                  <FilterDropdown 
+                    options={chronicDiseases}
+                    selectedValues={selectedDiseases}
+                    onChange={setSelectedDiseases}
+                    placeholder="Filter by chronic baseline"
+                  />
                 </div>
                 <div className="pt-search-wrap">
                   <input
@@ -119,6 +137,15 @@ const PatientTable = () => {
             {loading ? (
               <div className="pt-table-wrap pt-table-fixed" ref={tableBodyRef}>
                 <table className="pt-table">
+                  <colgroup>
+                    <col style={{ width: "100px" }} />
+                    <col style={{ width: "220px" }} />
+                    <col style={{ width: "210px" }} />
+                    <col style={{ width: "150px" }} />
+                    <col style={{ width: "150px" }} />
+                    <col style={{ width: "110px" }} />
+                    <col style={{ width: "130px" }} />
+                  </colgroup>
                   <thead>
                     <tr>
                       <th>Patient ID</th><th>Patient Details</th><th>Chronic Baseline</th><th>Principle Doctor</th><th>Contact</th><th>Status</th><th>Action</th>
@@ -140,6 +167,15 @@ const PatientTable = () => {
             ) : (
               <div className="pt-table-wrap pt-table-fixed" ref={tableBodyRef}>
                 <table className="pt-table">
+                  <colgroup>
+                    <col style={{ width: "100px" }} />
+                    <col style={{ width: "220px" }} />
+                    <col style={{ width: "210px" }} />
+                    <col style={{ width: "150px" }} />
+                    <col style={{ width: "150px" }} />
+                    <col style={{ width: "110px" }} />
+                    <col style={{ width: "130px" }} />
+                  </colgroup>
                   <thead>
                     <tr>
                       <th>Patient ID</th>
@@ -178,7 +214,9 @@ const PatientTable = () => {
                           </td>
                           <td>
                             {isChronic ? (
-                              <span className="pt-chronic-badge" style={{ color: '#E74C3C', background: '#FFE8E8' }}>Type-2 Diabetes</span>
+                              <span className="pt-chronic-badge" style={getChronicBadgeStyle(isChronic)} title={isChronic}>
+                                {isChronic}
+                              </span>
                             ) : <span className="pt-chronic-badge" style={{ color: '#6b7280', background: '#f0f2f5' }}>None</span>}
                           </td>
                           <td>
@@ -314,23 +352,6 @@ const PatientTable = () => {
         .pt-filter-wrap {
           display: flex;
           align-items: center;
-          gap: 8px;
-          border: 1px solid #e0e4ec;
-          border-radius: 8px;
-          padding: 6px 12px;
-          background: #fff;
-        }
-        .pt-filter-label {
-          font-size: 0.85rem;
-          color: #4b5563;
-        }
-        .pt-filter-select {
-          border: none;
-          outline: none;
-          font-size: 0.85rem;
-          color: #1a1a2e;
-          font-weight: 500;
-          background: transparent;
         }
         .pt-search-wrap {
           display: flex;
@@ -355,11 +376,13 @@ const PatientTable = () => {
           min-height: 0; 
           margin: 0 20px 5px 20px;
           border-radius: 8px;
+          border: 1px solid #e0e4ec;
         }
         .pt-table {
           width: 100%;
           border-collapse: collapse;
           font-size: 0.85rem;
+          table-layout: fixed;
         }
         .pt-table thead tr { background: #f4f5f8; }
         .pt-table th {
@@ -403,6 +426,10 @@ const PatientTable = () => {
         .pt-chronic-badge {
           display: inline-block; padding: 4px 10px;
           border-radius: 12px; font-size: 0.75rem; font-weight: 600; white-space: nowrap;
+          max-width: 100%;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          vertical-align: middle;
         }
 
         .pt-avatar-doctor {
