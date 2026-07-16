@@ -158,7 +158,7 @@ const PatientTable = () => {
               </div>
             ) : error ? (
               <div className="pt-error-state">
-                <span>⚠ {error}</span>
+                <span>Error: {error}</span>
               </div>
             ) : pagePatients.length === 0 ? (
               <div className="pt-table-fixed pt-empty-state">

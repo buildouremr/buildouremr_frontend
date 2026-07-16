@@ -5,7 +5,7 @@ import DashboardAPI from "../API/dashboardAPI";
 const buildFullName = (member) => {
   const parts = [
     member.employeeFirstName,
-    member.getEmployeeMiddleName,
+    member.employeeMiddleName,
     member.employeeLastName,
   ].filter((p) => p && p.trim() !== "");
   return parts.join(" ") || "—";
@@ -37,7 +37,7 @@ const useTeamSection = () => {
       setLoading(true);
       setError(null);
       try {
-        const userId = localStorage.getItem("userId");
+        const userId = sessionStorage.getItem("userId");
         const res = await DashboardAPI.getTeamList(userId);
         const raw = res.data?.data ?? [];
         setTeamMembers(raw.map(mapMember));
@@ -49,11 +49,11 @@ const useTeamSection = () => {
     },
 
     handleViewAll: () => {
-      console.log("View all team members");
+      // TODO: View all team members
     },
 
     handleChat: (id) => {
-      console.log("Open chat with:", id);
+      // TODO: Open chat with id
     },
   };
 

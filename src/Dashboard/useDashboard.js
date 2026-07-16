@@ -31,8 +31,7 @@ const useDashboard = () => {
   const [countdown, setCountdown] = useState(60);
 
   const handleLogout = () => {
-    localStorage.removeItem("token");
-    window.location.reload();
+    window.dispatchEvent(new Event("session-expired"));
   };
 
   const resetActivity = useIdleTimer(
@@ -49,7 +48,7 @@ const useDashboard = () => {
     setSummaryLoading(true);
     setSummaryError(null);
     try {
-      const userId = localStorage.getItem("userId");
+      const userId = sessionStorage.getItem("userId");
       const res = await DashboardAPI.getDashboardSummary(userId, date);
       setSummaryData(res.data?.data ?? null);
     } catch (err) {

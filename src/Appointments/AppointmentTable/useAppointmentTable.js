@@ -95,7 +95,7 @@ const useAppointmentTable = ({
     setLoading(true);
     setError(null);
     try {
-      const userId = localStorage.getItem("userId");
+      const userId = sessionStorage.getItem("userId");
       const apptDate = formatDateForAPI(date || new Date());
       const res = await AppointmentsAPI.getAppointments(userId, apptDate, apiPage);
       const list = res.data?.data ?? [];

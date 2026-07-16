@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
 import useLogin from './useLogin';
-import ForgotPassword from './ForgotPassword'; // NEW
+import ForgotPassword from './ForgotPassword';
 import { MdOutlineMailOutline } from "react-icons/md";
 import { FaLock } from "react-icons/fa6";
 
 const Login = ({ onLoginSuccess }) => {
-  const [showForgot, setShowForgot] = useState(false); // NEW
-  const { email, password, handleChange, handleSubmit, error, hasError } = useLogin(onLoginSuccess);
+  const [showForgot, setShowForgot] = useState(false);
+  const { email, password, handleChange, handleSubmit, emailError, passwordError, generalError, loading } = useLogin(onLoginSuccess);
 
   // Render ForgotPassword as its own full-page split layout
   if (showForgot) {
@@ -32,47 +32,75 @@ const Login = ({ onLoginSuccess }) => {
               <p style={styles.welcome}>Welcome Back</p>
             </div>
 
-            <form onSubmit={handleSubmit} style={styles.form}>
-              {hasError && (
-                <p style={styles.errorText}>{error}</p>
+            <form onSubmit={handleSubmit} style={styles.form} id="login-form">
+              {/* General authentication error banner — no field highlighting */}
+              {generalError && (
+                <p id="login-error" style={styles.errorText}>{generalError}</p>
               )}
 
-              <div style={{
-                ...styles.inputGroup,
-                border: hasError ? '1px solid red' : '1px solid #ccc'
-              }}>
-                <span style={styles.icon}> <MdOutlineMailOutline style={styles.email} /> </span>
-                <input
-                  type="email"
-                  name="email"
-                  placeholder="Email Address"
-                  value={email}
-                  onChange={handleChange}
-                  style={styles.input}
-                />
+              {/* Email field */}
+              <div>
+                <div style={{
+                  ...styles.inputGroup,
+                  border: emailError ? '1px solid red' : '1px solid #ccc'
+                }}>
+                  <span style={styles.icon}> <MdOutlineMailOutline style={styles.email} /> </span>
+                  <input
+                    id="login-email"
+                    type="email"
+                    name="email"
+                    placeholder="Email Address"
+                    value={email}
+                    onChange={handleChange}
+                    style={styles.input}
+                    autoComplete="email"
+                  />
+                </div>
+                {emailError && (
+                  <p style={styles.fieldError}>{emailError}</p>
+                )}
               </div>
 
-              <div style={{
-                ...styles.inputGroup,
-                border: hasError ? '1px solid red' : '1px solid #ccc'
-              }}>
-                <span style={styles.icon}>
-                  <FaLock style={styles.password} />
-                </span>
-                <input
-                  type="password"
-                  name="password"
-                  placeholder="Password"
-                  value={password}
-                  onChange={handleChange}
-                  style={styles.input}
-                />
+              {/* Password field */}
+              <div>
+                <div style={{
+                  ...styles.inputGroup,
+                  border: passwordError ? '1px solid red' : '1px solid #ccc'
+                }}>
+                  <span style={styles.icon}>
+                    <FaLock style={styles.password} />
+                  </span>
+                  <input
+                    id="login-password"
+                    type="password"
+                    name="password"
+                    placeholder="Password"
+                    value={password}
+                    onChange={handleChange}
+                    style={styles.input}
+                    autoComplete="current-password"
+                  />
+                </div>
+                {passwordError && (
+                  <p style={styles.fieldError}>{passwordError}</p>
+                )}
               </div>
 
-              <button type="submit" style={styles.loginButton}>Login</button>
+              <button
+                id="login-submit"
+                type="submit"
+                style={{
+                  ...styles.loginButton,
+                  opacity: loading ? 0.7 : 1,
+                  cursor: loading ? 'not-allowed' : 'pointer',
+                }}
+                disabled={loading}
+              >
+                {loading ? 'Signing in...' : 'Login'}
+              </button>
             </form>
 
-            <p style={styles.forgotPassword} onClick={() => setShowForgot(true)}>
+            <p id="forgot-password-link" style={styles.forgotPassword} onClick={() => setShowForgot(true)}>
               Forgot Password
             </p>
           </>
@@ -100,8 +128,8 @@ const styles = {
   },
   leftSection: {
     flex: 5.5,
-    position: "relative", // important for arch positioning
-    overflow: "hidden",   // hides extra curve overflow
+    position: "relative",
+    overflow: "hidden",
     display: "flex",
     flexDirection: "column",
     justifyContent: "center",
@@ -214,6 +242,14 @@ const styles = {
     fontSize: '0.9rem',
     marginBottom: '10px',
     textAlign: 'left'
+  },
+  fieldError: {
+    color: 'red',
+    fontSize: '0.8rem',
+    marginTop: '4px',
+    marginBottom: '0px',
+    textAlign: 'left',
+    paddingLeft: '2px',
   },
 };
 

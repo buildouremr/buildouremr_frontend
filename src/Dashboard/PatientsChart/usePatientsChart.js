@@ -14,7 +14,7 @@ const usePatientsChart = () => {
 
   const meth = {
     handleViewAll: () => {
-      console.log("View all patients chart");
+      // TODO: View all patients chart
     },
   };
 

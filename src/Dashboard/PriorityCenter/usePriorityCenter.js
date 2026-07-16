@@ -4,28 +4,28 @@ const usePriorityCenter = () => {
       {
         id: 1,
         title: "Waiting Patients",
-        icon: "👥",
+        icon: "WP",
         iconBg: "#E8F0FF",
         iconColor: "#2E7DF7",
       },
       {
         id: 2,
         title: "Follow up dues",
-        icon: "⏰",
+        icon: "FU",
         iconBg: "#FFE8E8",
         iconColor: "#E74C3C",
       },
       {
         id: 3,
         title: "Lab Results to Review",
-        icon: "🧪",
+        icon: "LR",
         iconBg: "#FFF8E1",
         iconColor: "#F9A825",
       },
       {
         id: 4,
         title: "No Show",
-        icon: "😐",
+        icon: "NS",
         iconBg: "#FFF8E1",
         iconColor: "#F9A825",
       },
@@ -34,7 +34,7 @@ const usePriorityCenter = () => {
 
   const meth = {
     handleView: (id) => {
-      console.log("View priority item:", id);
+      // TODO: View priority item id
     },
   };
 

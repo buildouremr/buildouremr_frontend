@@ -2,45 +2,52 @@ import axios from "axios";
 
 const BASE_URL = "http://localhost:8080/api";
 
-// ✅ Create instance
+// Create axios instance with cookie credentials
 const axiosInstance = axios.create({
     baseURL: BASE_URL,
     headers: {
         "Content-Type": "application/json"
-    }
+    },
+    withCredentials: true  // Required: sends HttpOnly cookies with every request
 });
 
-// ✅ REQUEST INTERCEPTOR (Attach Token Automatically)
+// REQUEST INTERCEPTOR
 axiosInstance.interceptors.request.use(
     (config) => {
-        const token = localStorage.getItem("token");
-
-        // Skip token for auth APIs if needed
-        const isAuthApi = config.url.includes("/login/login") || config.url.includes("/login/auth");
-
-        if (token && !isAuthApi) {
-            config.headers.Authorization = `Bearer ${token}`;
+        // Prevent Chrome from aggressively caching GET requests by appending a unique timestamp
+        if (config.method === 'get') {
+            config.params = {
+                ...config.params,
+                _t: new Date().getTime()
+            };
         }
-
         return config;
     },
     (error) => Promise.reject(error)
 );
 
-// ✅ RESPONSE INTERCEPTOR (Global Error Handling)
+// RESPONSE INTERCEPTOR (Global Error Handling)
 axiosInstance.interceptors.response.use(
-    (response) => response,
+    (response) => {
+        console.log(`✅ [API SUCCESS] ${response.config.method.toUpperCase()} ${response.config.url} returned ${response.status}`);
+        return response;
+    },
     (error) => {
         const status = error?.response?.status;
+        console.log(`❌ [API FAILED] ${error.config?.method?.toUpperCase()} ${error.config?.url} returned ${status}`);
 
-        // 🔐 Handle Unauthorized (Token Expired / Invalid)
-        // ONLY fire the session-expired event when a token already exists,
-        // meaning the user IS authenticated but the token has since expired.
-        // This prevents triggering the modal on fresh login failures (no token yet).
-        if ((status === 401 || status === 403) && localStorage.getItem("token")) {
-            localStorage.removeItem("token");
+        // Handle Unauthorized (Token Expired / Invalid)
+        // Only fire the session-expired event when the user is expected to be logged in
+        // (i.e. the request was NOT to a public auth endpoint).
+        const url = error?.config?.url || '';
+        const isPublicAuth = url.includes("/login/login")
+            || url.includes("/login/forgot-password")
+            || url.includes("/login/me")
+            || url.includes("/login/logout")
+            || url.includes("/login/register");
 
-            // Dispatch event to show custom UI modal
+        if ((status === 401 || status === 403) && !isPublicAuth) {
+            console.log("🔒 [SESSION EXPIRED] Dispatching session-expired event!");
             window.dispatchEvent(new Event("session-expired"));
         }
 

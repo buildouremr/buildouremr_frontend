@@ -82,7 +82,7 @@ const usePatientQueue = (selectedDate, onViewAll) => {
     setLoading(true);
     setError(null);
     try {
-      const userId = localStorage.getItem("userId");
+      const userId = sessionStorage.getItem("userId");
       const apptDate = formatDateForAPI(date || new Date());
       const res = await DashboardAPI.getDashboardAppointments(userId, apptDate, apiPage);
       const raw = res.data?.data ?? [];
@@ -137,7 +137,7 @@ const usePatientQueue = (selectedDate, onViewAll) => {
 
   const handleViewAll = () => {
     if (onViewAll) onViewAll();
-    else console.log("View all patients in queue");
+    else { /* TODO: View all patients in queue */ }
   };
 
   return {

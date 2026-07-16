@@ -14,7 +14,7 @@ const useRevenueChart = () => {
 
   const meth = {
     handleViewAll: () => {
-      console.log("View all revenue");
+      // TODO: View all revenue
     },
     formatCurrency: (amount) => {
       return "₹ " + amount.toLocaleString("en-IN");

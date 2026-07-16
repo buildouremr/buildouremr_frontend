@@ -2,14 +2,14 @@ import useStatsCards from "./useStatsCards";
 import { MdPeopleAlt, MdCalendarMonth, MdEventBusy } from "react-icons/md";
 
 const iconMap = {
-  waiting: MdPeopleAlt,
+  pending: MdPeopleAlt,
   appointments: MdCalendarMonth,
   cancelled: MdEventBusy,
 };
 
 /** Map card → appointments filter tab */
 const CARD_TO_FILTER = {
-  waiting:      "Pending",
+  pending:      "Pending",
   appointments: "All Appointments",
   cancelled:    "Cancelled",
 };

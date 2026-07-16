@@ -24,7 +24,7 @@ const PatientQueue = ({ selectedDate, onViewAll }) => {
         <div className="pq-header">
           <h2 className="pq-title">In Patients Queue</h2>
           {patients.length > 0 && (
-            <span className="pq-view-all" onClick={handleViewAll}>View More</span>
+            <span className="pq-view-all" onClick={handleViewAll}>View All</span>
           )}
         </div>
 
@@ -36,7 +36,7 @@ const PatientQueue = ({ selectedDate, onViewAll }) => {
             <span className="pq-loading-dot" />
           </div>
         ) : error ? (
-          <div className="pq-fixed-area pq-state-wrapper pq-error-cell">⚠ {error}</div>
+          <div className="pq-fixed-area pq-state-wrapper pq-error-cell">Error: {error}</div>
         ) : patients.length === 0 ? (
           /* Empty state still takes fixed height */
           <div className="pq-fixed-area pq-empty-state">
@@ -47,6 +47,9 @@ const PatientQueue = ({ selectedDate, onViewAll }) => {
             <p className="pq-empty-text">
               No patients are waiting at the moment. Great job keeping up with your schedule.
             </p>
+            <button className="pq-empty-btn" onClick={handleViewAll}>
+              View next day's schedule
+            </button>
           </div>
         ) : (
           /* Fixed-height table area — always shows 10 row slots */
@@ -314,8 +317,19 @@ const PatientQueue = ({ selectedDate, onViewAll }) => {
         .pq-empty-text {
           color: #9ca3af;
           font-size: 1rem;
-          margin: 0;
+          margin: 0 0 20px 0;
         }
+        .pq-empty-btn {
+          background: #2E7DF7;
+          color: #fff;
+          border: none;
+          padding: 10px 20px;
+          border-radius: 8px;
+          font-weight: 600;
+          cursor: pointer;
+          transition: background 0.2s;
+        }
+        .pq-empty-btn:hover { background: #2264cc; }
       `}</style>
     </>
   );

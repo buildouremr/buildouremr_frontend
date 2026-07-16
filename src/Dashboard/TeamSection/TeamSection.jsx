@@ -33,7 +33,7 @@ const TeamSection = () => {
       return [1, 2, 3, 4].map((k) => <SkeletonRow key={k} />);
     }
     if (error) {
-      return <p className="ts-state-msg ts-error-msg">⚠ {error}</p>;
+      return <p className="ts-state-msg ts-error-msg">Error: {error}</p>;
     }
     if (teamMembers.length === 0) {
       return <p className="ts-state-msg">No team members found.</p>;
@@ -71,7 +71,7 @@ const TeamSection = () => {
     <>
       <div className="ts-container">
         <div className="ts-header">
-          <h2 className="ts-title">Team</h2>
+          <h2 className="ts-title">Team Availability</h2>
           <span className="ts-view-all" onClick={handleViewAll}>View All</span>
         </div>
         <div className="ts-list">{renderBody()}</div>

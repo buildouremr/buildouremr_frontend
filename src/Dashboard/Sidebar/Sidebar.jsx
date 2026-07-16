@@ -65,7 +65,7 @@ const Sidebar = ({ activeMenu: propActiveMenu, onMenuChange, summaryData }) => {
           </div>
         </div>
         <div className="sb-bottom-card">
-          <div className="sb-card-emoji">🚀</div>
+          <div className="sb-card-emoji">&#9733;</div>
           <p className="sb-card-title">Let's start!</p>
           <p className="sb-card-desc">Creating or adding new tasks couldn't be easier</p>
           <button className="sb-card-btn"><MdAdd className="sb-btn-icon" /> Add New Task</button>

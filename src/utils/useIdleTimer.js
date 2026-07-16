@@ -18,11 +18,9 @@ export default function useIdleTimer(onLogout, onShowWarning) {
             onShowWarning();
 
             logoutTimer.current = setTimeout(() => {
-
-                localStorage.removeItem("token");
-
+                // Logout is handled by the parent component which calls
+                // the backend /logout endpoint to clear the HttpOnly cookie
                 onLogout();
-
             }, WARNING_TIME);
 
         }, IDLE_TIME);

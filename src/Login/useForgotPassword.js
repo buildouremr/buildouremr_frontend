@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react';
 import LoginAPI from './API/loginAPI';
 import HUtil from '../utils/useHutil';
 
+const MIN_PASSWORD_LENGTH = 6;
+
 const useForgotPassword = () => {
 
     const [step, setStep] = useState(1);
@@ -14,8 +16,10 @@ const useForgotPassword = () => {
 
     const [resendTimer, setResendTimer] = useState(30);
     const [canResend, setCanResend] = useState(false);
+    const [resendCount, setResendCount] = useState(0);
 
     // Countdown timer fires whenever we enter the OTP step (step 2)
+    // OR when resendCount changes (user clicked Resend OTP)
     useEffect(() => {
         if (step !== 2) return;
 
@@ -34,9 +38,9 @@ const useForgotPassword = () => {
         }, 1000);
 
         return () => clearInterval(interval);
-    }, [step]);
+    }, [step, resendCount]);
 
-    // STEP 1 → SEND OTP (isResend = true when called from "Resend OTP")
+    // STEP 1 - SEND OTP (isResend = true when called from "Resend OTP")
     const sendOtp = async (isResend = false) => {
         setError('');
 
@@ -45,12 +49,16 @@ const useForgotPassword = () => {
             return;
         }
 
+        if (contact.includes('@') && !HUtil.isValidEmail(contact)) {
+            setError('Invalid email format');
+            return;
+        }
+
         try {
             setLoading(true);
 
             await LoginAPI.sendOtp({
-                userName: contact,
-                contact: contact
+                userEmail: contact
             });
 
             if (!isResend) {
@@ -58,20 +66,26 @@ const useForgotPassword = () => {
             }
 
         } catch (e) {
-            setError(e?.response?.data || 'Failed to send OTP');
+            const status = e?.response?.status;
+            if (status === 429) {
+                setError('Please wait 30 seconds before requesting another OTP');
+            } else {
+                setError(e?.response?.data?.data || 'Failed to send OTP');
+            }
         } finally {
             setLoading(false);
         }
     };
 
-    // Resend OTP - re-calls sendOtp without advancing the step, resets timer
+    // Resend OTP - re-calls sendOtp without advancing the step
+    // Incrementing resendCount triggers the useEffect to restart the timer
     const handleResendOtp = async () => {
+        if (loading) return; // Prevent duplicate requests while loading
         await sendOtp(true);
-        setResendTimer(30);
-        setCanResend(false);
+        setResendCount(prev => prev + 1);
     };
 
-    // STEP 2 → VERIFY OTP
+    // STEP 2 - VERIFY OTP
     const verifyOtp = async () => {
         setError('');
 
@@ -85,12 +99,13 @@ const useForgotPassword = () => {
 
             const response = await LoginAPI.verifyOtp({
                 key: contact,
-                otp: otp.replace(/\s/g, '')
+                OTP: otp.replace(/\s/g, '')
             });
 
             const result = response?.data?.data;
 
-            if (result && result.includes('OTP')) {
+            // Fixed: exact match instead of .includes() which matched both VALID and INVALID
+            if (result === 'OTP_VALID') {
                 setStep(3);
             } else {
                 setError('You have entered an invalid OTP');
@@ -103,7 +118,7 @@ const useForgotPassword = () => {
         }
     };
 
-    // STEP 3 → RESET PASSWORD
+    // STEP 3 - RESET PASSWORD
     const resetPassword = async (onSuccess) => {
         setError('');
 
@@ -112,19 +127,29 @@ const useForgotPassword = () => {
             return;
         }
 
+        if (newPassword.length < MIN_PASSWORD_LENGTH) {
+            setError(`Password must be at least ${MIN_PASSWORD_LENGTH} characters`);
+            return;
+        }
+
         try {
             setLoading(true);
 
             await LoginAPI.resetPassword({
-                userName: contact,
+                userEmail: contact,
                 password: newPassword
             });
 
-            alert('Password reset successful');
+            alert('Password reset successful. Please login with your new password.');
             onSuccess && onSuccess();
 
         } catch (e) {
-            setError('Failed to reset password');
+            const message = e?.response?.data?.data;
+            if (message && message.includes('OTP verification required')) {
+                setError('OTP verification expired. Please start again.');
+            } else {
+                setError(message || 'Failed to reset password');
+            }
         } finally {
             setLoading(false);
         }

@@ -1,7 +1,6 @@
-
 import useWelcomeSection from "./useWelcomeSection";
-import { MdChevronLeft, MdChevronRight } from "react-icons/md";
 import DatePicker from "../../components/DatePicker/DatePicker";
+import { MdChevronLeft, MdChevronRight, MdAdd } from "react-icons/md";
 
 const WelcomeSection = ({ summaryData, summaryLoading, selectedDate, onDateChange, onViewAll }) => {
   const { doctorName, visitCount, formattedDate } =
@@ -39,33 +38,39 @@ const WelcomeSection = ({ summaryData, summaryLoading, selectedDate, onDateChang
         <div className="ws-left">
           <h1 className="ws-title">Welcome, {doctorName}</h1>
           <p className="ws-subtitle">
-            You have {visitCount} visits for this day,{" "}
+            Today you have {visitCount} visits,{" "}
             <span className="ws-view-more" onClick={onViewAll}>View More</span>
           </p>
         </div>
 
-        {/* Date Navigator — uses custom DatePicker, icon hidden, calendar opens on label click */}
-        <div className="ws-date-nav">
-          <button
-            className="ws-nav-btn"
-            onClick={(e) => { e.stopPropagation(); handlePrev(); }}
-          >
-            <MdChevronLeft />
+        <div className="ws-right">
+          <button className="ws-create-btn">
+            <MdAdd style={{ fontSize: "1.2rem", strokeWidth: 1 }} />
+            Create Appointment
           </button>
-          <div className="ws-picker-wrap">
-            <span className="ws-date-label">{formattedDate}</span>
-            <DatePicker
-              value={toISO(selectedDate)}
-              onChange={handlePickerChange}
-              id="ws-date-picker"
-            />
+
+          <div className="ws-date-nav">
+            <button
+              className="ws-nav-btn"
+              onClick={(e) => { e.stopPropagation(); handlePrev(); }}
+            >
+              <MdChevronLeft />
+            </button>
+            <div className="ws-picker-wrap">
+              <span className="ws-date-label">{formattedDate}</span>
+              <DatePicker
+                value={toISO(selectedDate)}
+                onChange={handlePickerChange}
+                id="ws-date-picker"
+              />
+            </div>
+            <button
+              className="ws-nav-btn"
+              onClick={(e) => { e.stopPropagation(); handleNext(); }}
+            >
+              <MdChevronRight />
+            </button>
           </div>
-          <button
-            className="ws-nav-btn"
-            onClick={(e) => { e.stopPropagation(); handleNext(); }}
-          >
-            <MdChevronRight />
-          </button>
         </div>
       </div>
 
@@ -94,6 +99,30 @@ const WelcomeSection = ({ summaryData, summaryLoading, selectedDate, onDateChang
         }
         .ws-view-more:hover {
           text-decoration: underline;
+        }
+
+        .ws-right {
+          display: flex;
+          align-items: center;
+          gap: 16px;
+        }
+
+        .ws-create-btn {
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          background: #0066FF;
+          color: #fff;
+          border: none;
+          padding: 8px 16px;
+          border-radius: 6px;
+          font-size: 0.85rem;
+          font-weight: 600;
+          cursor: pointer;
+          transition: background 0.2s;
+        }
+        .ws-create-btn:hover {
+          background: #005ce6;
         }
 
         .ws-date-nav {

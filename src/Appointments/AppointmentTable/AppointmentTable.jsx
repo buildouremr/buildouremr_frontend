@@ -144,7 +144,7 @@ const AppointmentTable = ({ selectedDate, currentPage, onPageChange, onNextDay, 
               </div>
             ) : error ? (
               <div className="at-error-state">
-                <span>⚠ {error}</span>
+                <span>Error: {error}</span>
               </div>
             ) : pageAppointments.length === 0 ? (
               /* ── No-appointments empty state (fixed height) ── */

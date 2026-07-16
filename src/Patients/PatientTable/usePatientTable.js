@@ -43,7 +43,7 @@ const usePatientTable = ({ rowsPerPage }) => {
     } else if (activeTab === "Active Patients") {
       list = list.filter((p) => p.patientRegistrationActive);
     } else if (activeTab === "My Patients") {
-      const loggedInUserId = Number(localStorage.getItem("userId"));
+      const loggedInUserId = Number(sessionStorage.getItem("userId"));
       list = list.filter((p) => Number(p.principalDoctorId) === loggedInUserId);
     }
 
@@ -74,7 +74,7 @@ const usePatientTable = ({ rowsPerPage }) => {
   const startIdx = (currentPage - 1) * safeRowsPerPage;
   const pagePatients = filteredPatients.slice(startIdx, startIdx + safeRowsPerPage);
 
-  const loggedInUserId = Number(localStorage.getItem("userId"));
+  const loggedInUserId = Number(sessionStorage.getItem("userId"));
 
   const tabCounts = {
     "All Patients": patients.length,
