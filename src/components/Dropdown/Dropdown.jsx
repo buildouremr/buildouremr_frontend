@@ -11,7 +11,7 @@ import { MdKeyboardArrowDown, MdCheck } from "react-icons/md";
  *  - placeholder: string
  *  - id: string
  */
-const Dropdown = ({ options = [], value, onChange, placeholder = "Select...", id }) => {
+const Dropdown = ({ options = [], value, onChange, placeholder = "Select...", id, className, disabled }) => {
   const [open, setOpen] = useState(false);
   const wrapRef = useRef(null);
 
@@ -33,11 +33,12 @@ const Dropdown = ({ options = [], value, onChange, placeholder = "Select...", id
 
   return (
     <>
-      <div className="dd-wrap" ref={wrapRef} id={id}>
+      <div className={`dd-wrap${className ? " " + className : ""}`} ref={wrapRef} id={id}>
         <button
           type="button"
-          className={`dd-trigger ${open ? "dd-trigger-open" : ""}`}
-          onClick={() => setOpen((v) => !v)}
+          className={`dd-trigger ${open ? "dd-trigger-open" : ""} ${disabled ? "dd-trigger-disabled" : ""}`}
+          onClick={() => !disabled && setOpen((v) => !v)}
+          disabled={disabled}
         >
           <span className={selected ? "dd-value" : "dd-placeholder"}>
             {selected ? selected.label : placeholder}
@@ -88,6 +89,8 @@ const Dropdown = ({ options = [], value, onChange, placeholder = "Select...", id
         }
         .dd-trigger:hover { border-color: #93c5fd; }
         .dd-trigger-open { border-color: #2E7DF7 !important; background: #fff !important; }
+        .dd-trigger-disabled { background: #F3F4F6 !important; cursor: default !important; opacity: 0.7; }
+        .dd-trigger-disabled:hover { border-color: #e0e4ec !important; }
         .dd-value { font-size: 0.9rem; color: #1a1a2e; font-weight: 500; flex: 1; }
         .dd-placeholder { font-size: 0.9rem; color: #9ca3af; flex: 1; }
         .dd-arrow { font-size: 1.2rem; color: #6b7280; flex-shrink: 0; transition: transform 0.2s; }

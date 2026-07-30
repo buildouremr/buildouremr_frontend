@@ -6,6 +6,7 @@ import DatePicker from "../../components/DatePicker/DatePicker";
 import Dropdown from "../../components/Dropdown/Dropdown";
 import PatientSearchInput from "../../components/PatientSearchInput/PatientSearchInput";
 import ConfirmModal from "../../components/ConfirmModal/ConfirmModal";
+import SavePatientConfirmModal from "./SavePatientConfirmModal";
 import useNewPatientModal from "./useNewPatientModal";
 
 const GENDER_OPTIONS = [
@@ -99,7 +100,8 @@ const NewPatientModal = ({ onClose, onSuccess, onError }) => {
     patientSearchResults,
     fullNameSearchResults,
     isSearchingPatient,
-    handleSubmit,
+    validateBeforeSubmit,
+    executeSubmit,
     loading,
     error,
     doctors,
@@ -110,6 +112,7 @@ const NewPatientModal = ({ onClose, onSuccess, onError }) => {
   } = useNewPatientModal({ onClose, onSuccess, onError });
 
   const [showCloseConfirm, setShowCloseConfirm] = useState(false);
+  const [showSaveConfirm, setShowSaveConfirm] = useState(false);
   const [activeNameField, setActiveNameField] = useState(null);
 
   const handleAttemptClose = () => {
@@ -377,12 +380,27 @@ const NewPatientModal = ({ onClose, onSuccess, onError }) => {
           {/* Footer */}
           <div className="npm-footer">
             <button className="npm-btn-cancel" onClick={handleAttemptClose}>Cancel</button>
-            <button className="npm-btn-book" onClick={handleSubmit} disabled={loading}>
+            <button className="npm-btn-book" onClick={() => {
+              if (validateBeforeSubmit()) {
+                setShowSaveConfirm(true);
+              }
+            }} disabled={loading}>
               {loading ? "Booking..." : "Book Appointment"}
             </button>
           </div>
         </div>
       </div>
+
+      {showSaveConfirm && (
+        <SavePatientConfirmModal
+          onConfirm={() => {
+            setShowSaveConfirm(false);
+            executeSubmit();
+          }}
+          onCancel={() => setShowSaveConfirm(false)}
+          loading={loading}
+        />
+      )}
 
       {showCloseConfirm && (
         <ConfirmModal

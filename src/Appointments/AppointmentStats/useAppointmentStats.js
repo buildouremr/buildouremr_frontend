@@ -10,7 +10,7 @@ const formatDate = (date) => {
   return `${year}-${month}-${day}`;
 };
 
-const useAppointmentStats = (selectedDate) => {
+const useAppointmentStats = (selectedDate, refreshKey) => {
   const [counts, setCounts] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -30,9 +30,10 @@ const useAppointmentStats = (selectedDate) => {
     }
   }, [selectedDate]);
 
+  // Re-fetch when date changes OR after a new appointment is booked (refreshKey bumps)
   useEffect(() => {
     fetchCounts();
-  }, [fetchCounts]);
+  }, [fetchCounts, refreshKey]);
 
   // Build the stats array from API keys
   const stats = counts

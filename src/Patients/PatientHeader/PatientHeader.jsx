@@ -8,7 +8,7 @@ const PatientHeader = ({ onCreatePatient }) => {
         <div className="ph-right">
           <button className="ph-new-btn" onClick={onCreatePatient}>
             <MdAdd style={{ fontSize: "1.1rem" }} />
-            <span>Create Patient</span>
+            <span>Create new patient</span>
           </button>
         </div>
       </div>

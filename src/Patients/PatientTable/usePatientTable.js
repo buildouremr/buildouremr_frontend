@@ -3,7 +3,7 @@ import PatientsAPI from "../API/PatientsAPI";
 
 const TABS = ["All Patients", "My Patients", "Active Patients", "Inactive Patients"];
 
-const usePatientTable = ({ rowsPerPage }) => {
+const usePatientTable = ({ rowsPerPage, refreshTrigger }) => {
   const [patients, setPatients] = useState([]);
   const [chronicDiseases, setChronicDiseases] = useState([]);
   const [selectedDiseases, setSelectedDiseases] = useState([]);
@@ -33,7 +33,7 @@ const usePatientTable = ({ rowsPerPage }) => {
 
   useEffect(() => {
     fetchPatientsAndDiseases();
-  }, []);
+  }, [refreshTrigger]);
 
   const filteredPatients = useMemo(() => {
     let list = patients;

@@ -19,7 +19,7 @@ const AppointmentsAPI = {
         axiosInstance.get(`/appointments/getCreateApptDetails`),
 
     getPatients: (patientName) =>
-        axiosInstance.get(`/appointments/getPatients?patientname=${patientName}`),
+        axiosInstance.get(`/patients/getPatients?patientname=${patientName}`),
 };
 
 export default AppointmentsAPI;

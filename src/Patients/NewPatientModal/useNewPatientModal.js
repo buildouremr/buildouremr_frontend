@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
 import AppointmentsAPI from "../../Appointments/API/appointmentsAPI";
+import PatientsAPI from "../API/PatientsAPI";
 
 const generateSlots = () => {
   const slots = [];
@@ -160,22 +161,60 @@ const useNewPatientModal = ({ onClose, onSuccess, onError }) => {
     );
   };
 
-  const handleSubmit = async () => {
-    setLoading(true);
+  const validateBeforeSubmit = () => {
     setError(null);
+    
+    // Validations
+    if (!formData.firstName?.trim()) {
+      setError("First Name is required.");
+      return false;
+    }
+    if (!formData.lastName?.trim()) {
+      setError("Last Name is required.");
+      return false;
+    }
+    if (!formData.phoneNumber?.trim()) {
+      setError("Phone Number is required.");
+      return false;
+    }
+    if (formData.phoneNumber && !/^\+?\d{10,15}$/.test(formData.phoneNumber.replace(/[\s()-]/g, ''))) {
+      setError("Please enter a valid Phone Number.");
+      return false;
+    }
+    if (formData.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+      setError("Please enter a valid Email.");
+      return false;
+    }
+    if (!formData.dateOfBirth) {
+      setError("Date of Birth is required.");
+      return false;
+    }
+    if (new Date(formData.dateOfBirth) > new Date()) {
+      setError("Date of Birth cannot be in the future.");
+      return false;
+    }
+    if (!formData.gender) {
+      setError("Gender is required.");
+      return false;
+    }
+    return true;
+  };
+
+  const executeSubmit = async () => {
+    setLoading(true);
 
     const payload = {
-      firstName: formData.firstName,
-      lastName: formData.lastName,
-      mobileNumber: formData.phoneNumber,
-      email: formData.email,
+      patientFirstName: formData.firstName,
+      patientLastName: formData.lastName,
+      patientMobileNumber: formData.phoneNumber,
+      patientEmailId: formData.email,
       dateOfBirth: formData.dateOfBirth,
       gender: formData.gender,
-      emergencyContact: formData.emergencyContact,
-      location: formData.location,
+      patientEmergencyContact: formData.emergencyContact,
+      patientLocation: formData.location,
       chiefComplaint: formData.chiefComplaint,
-      knownAllergies: formData.knownAllergies,
-      chronicHistory: formData.chronicHistory,
+      patientKnowAllergies: formData.knownAllergies.join(", "),
+      patientChronicHistory: formData.chronicHistory.join(", "),
       providerId: formData.doctorId ? parseInt(formData.doctorId, 10) : null,
       appointmentDate: formData.appointmentDate,
       appointmentTime: formData.appointmentTime,
@@ -185,12 +224,12 @@ const useNewPatientModal = ({ onClose, onSuccess, onError }) => {
     };
 
     try {
-      await AppointmentsAPI.createAppointment(payload);
+      await PatientsAPI.createNewPatient(payload);
       if (onSuccess) onSuccess();
       onClose();
     } catch (err) {
-      console.error("Failed to create appointment", err);
-      const msg = "Failed to create appointment. Please try again.";
+      console.error("Failed to create patient", err);
+      const msg = err.response?.data?.data || "Failed to create patient. Please try again.";
       setError(msg);
       if (onError) onError(msg);
     } finally {
@@ -210,7 +249,8 @@ const useNewPatientModal = ({ onClose, onSuccess, onError }) => {
     patientSearchResults,
     fullNameSearchResults,
     isSearchingPatient,
-    handleSubmit,
+    validateBeforeSubmit,
+    executeSubmit,
     loading,
     error,
     doctors,

@@ -142,9 +142,24 @@ const DatePicker = ({
               <button type="button" className="dp-nav-btn" onClick={prevMonth}>
                 <MdChevronLeft />
               </button>
-              <span className="dp-month-label">
-                {MONTHS[viewMonth]} {viewYear}
-              </span>
+              <div className="dp-month-year-selectors">
+                <select 
+                  value={viewMonth} 
+                  onChange={(e) => setViewMonth(Number(e.target.value))}
+                  className="dp-select dp-month-select"
+                >
+                  {MONTHS.map((m, idx) => <option key={m} value={idx}>{m}</option>)}
+                </select>
+                <select 
+                  value={viewYear} 
+                  onChange={(e) => setViewYear(Number(e.target.value))}
+                  className="dp-select dp-year-select"
+                >
+                  {Array.from({ length: 120 }, (_, i) => new Date().getFullYear() - 100 + i).map(y => (
+                    <option key={y} value={y}>{y}</option>
+                  ))}
+                </select>
+              </div>
               <button type="button" className="dp-nav-btn" onClick={nextMonth}>
                 <MdChevronRight />
               </button>
@@ -267,7 +282,26 @@ const DatePicker = ({
           transition: all 0.15s;
         }
         .dp-nav-btn:hover { background: #f0f4ff; color: #2E7DF7; border-color: #93c5fd; }
-        .dp-month-label { font-size: 0.9rem; font-weight: 700; color: #1a1a2e; }
+        .dp-month-year-selectors {
+          display: flex;
+          align-items: center;
+          gap: 4px;
+        }
+        .dp-select {
+          border: 1px solid transparent;
+          background: transparent;
+          font-size: 0.9rem;
+          font-weight: 700;
+          color: #1a1a2e;
+          cursor: pointer;
+          padding: 2px 4px;
+          border-radius: 4px;
+          outline: none;
+        }
+        .dp-select:hover {
+          background: #f0f4ff;
+          border-color: #d1d5db;
+        }
 
         .dp-grid {
           display: grid;

@@ -1,7 +1,6 @@
 import useAppointmentTable from "./useAppointmentTable";
 import { useState, useRef, useEffect, useCallback } from "react";
 import { MdMoreVert, MdSearch, MdCalendarMonth } from "react-icons/md";
-import PatientDetailPanel from "../PatientDetailPanel/PatientDetailPanel";
 import Pagination from "../../components/Pagination/Pagination";
 
 // Height of a single data row (must match .at-table td height in CSS below)
@@ -66,9 +65,9 @@ const AppointmentTable = ({ selectedDate, currentPage, onPageChange, onNextDay, 
 
   const {
     pageAppointments, tabs, tabCounts, activeTab,
-    selectedPatient, selectedApptId, loading, detailLoading, error,
+    loading, error,
     searchQuery, totalPages,
-    handleTabChange, handleSelectPatient, handleClosePanel,
+    handleTabChange,
     handleStartConsultation, handleSearchChange,
     fetchAppointments,
   } = useAppointmentTable({ selectedDate, currentPage, onPageChange, externalActiveTab, rowsPerPage });
@@ -76,7 +75,7 @@ const AppointmentTable = ({ selectedDate, currentPage, onPageChange, onNextDay, 
   // Re-fetch whenever parent increments refreshKey after booking
   useEffect(() => {
     if (refreshKey && refreshKey > 0) fetchAppointments();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [refreshKey]);
 
   const emptyRowCount = loading || error || pageAppointments.length === 0
@@ -87,7 +86,7 @@ const AppointmentTable = ({ selectedDate, currentPage, onPageChange, onNextDay, 
 
   return (
     <>
-      <div className={`at-wrapper ${selectedPatient ? "at-with-panel" : ""}`}>
+      <div className="at-wrapper">
         {/* ── Main table area ── */}
         <div className="at-main-container">
           <div className="at-main">
@@ -126,15 +125,17 @@ const AppointmentTable = ({ selectedDate, currentPage, onPageChange, onNextDay, 
               <div className="at-table-wrap at-table-fixed" ref={tableBodyRef}>
                 <table className="at-table">
                   <colgroup>
-                    <col style={{ width: "120px" }} />
-                    <col style={{ width: "200px" }} />
+                    <col style={{ width: "100px" }} />
+                    <col style={{ width: "160px" }} />
+                    <col style={{ width: "150px" }} />
+                    <col style={{ width: "140px" }} />
+                    <col style={{ width: "150px" }} />
+                    <col style={{ width: "100px" }} />
                     <col style={{ width: "180px" }} />
-                    <col style={{ width: "130px" }} />
-                    <col style={{ width: "190px" }} />
                   </colgroup>
                   <thead>
                     <tr>
-                      <th>Time</th><th>Patient</th><th>Type / Issue</th><th>Status</th><th>Action</th>
+                      <th>Time</th><th>Patient</th><th>Principle Doctor</th><th>Type / Issue</th><th>Chief Complaint</th><th>Status</th><th>Action</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -147,38 +148,60 @@ const AppointmentTable = ({ selectedDate, currentPage, onPageChange, onNextDay, 
                 <span>Error: {error}</span>
               </div>
             ) : pageAppointments.length === 0 ? (
-              /* ── No-appointments empty state (fixed height) ── */
               <div className="at-table-fixed at-empty-state">
-                <div className="at-empty-icon-wrap">
-                  <MdCalendarMonth className="at-empty-icon" />
-                </div>
-                <h3 className="at-empty-title">You're all caught up!</h3>
+                <h3 className="at-empty-title">
+                  {activeTab === "Pending" ? "You’re all caught up!" :
+                    activeTab === "Completed" ? "Ready for your first patient today" :
+                      activeTab === "Cancelled" ? "No cancellations today" :
+                        activeTab === "No Show" ? "Perfect attendance today!" :
+                          "You’re all caught up!"}
+                </h3>
                 <p className="at-empty-subtitle">
-                  No patients are waiting at the moment. Great job keeping up with your schedule.
+                  {activeTab === "Pending" ? "No patients are waiting at the moment. Great job keeping up with your schedule." :
+                    activeTab === "Completed" ? (
+                      <>Once you complete an active appointment from your queue, the consultation<br />summary details will appear here.</>
+                    ) :
+                      activeTab === "Cancelled" ? "All scheduled appointments are currently active in your queue." :
+                        activeTab === "No Show" ? (
+                          <>very scheduled patient has successfully attended their session or cancelled<br />ahead of time. No missed appointments recorded.</>
+                        ) :
+                          "No patients are waiting at the moment. Great job keeping up with your schedule."}
                 </p>
                 <button
-                  className="at-empty-btn"
-                  onClick={() => onNextDay && onNextDay()}
+                  className={activeTab === "Pending" || activeTab === "All Appointments" ? "at-empty-btn" : "at-empty-btn-filled"}
+                  onClick={() => {
+                    if (activeTab === "Pending" || activeTab === "All Appointments") {
+                      if (onNextDay) onNextDay();
+                    } else {
+                      handleTabChange("Pending");
+                    }
+                  }}
                 >
-                  <MdCalendarMonth style={{ fontSize: "1rem" }} />
-                  View next day's schedule
+                  <MdCalendarMonth style={{ fontSize: "1.1rem" }} />
+                  {activeTab === "Pending" || activeTab === "All Appointments" ? "View next day's schedule" :
+                    activeTab === "Completed" ? "View Patients in queue" :
+                      "View Pending Appointments"}
                 </button>
               </div>
             ) : (
               <div className="at-table-wrap at-table-fixed" ref={tableBodyRef}>
                 <table className="at-table">
                   <colgroup>
-                    <col style={{ width: "120px" }} />
-                    <col style={{ width: "200px" }} />
+                    <col style={{ width: "100px" }} />
+                    <col style={{ width: "160px" }} />
+                    <col style={{ width: "150px" }} />
+                    <col style={{ width: "140px" }} />
+                    <col style={{ width: "150px" }} />
+                    <col style={{ width: "100px" }} />
                     <col style={{ width: "180px" }} />
-                    <col style={{ width: "130px" }} />
-                    <col style={{ width: "190px" }} />
                   </colgroup>
                   <thead>
                     <tr>
                       <th>Time</th>
                       <th>Patient</th>
+                      <th>Principle Doctor</th>
                       <th>Type / Issue</th>
+                      <th>Chief Complaint</th>
                       <th>Status</th>
                       <th>Action</th>
                     </tr>
@@ -186,22 +209,24 @@ const AppointmentTable = ({ selectedDate, currentPage, onPageChange, onNextDay, 
                   <tbody>
                     {pageAppointments.map((appt, i) => {
                       const statusStyle = getStatusStyle(appt.status);
-                      const typeColor = (appt.type === "Follow-up" || appt.type === "Follow up") ? "#0D9B5C" : "#2E7DF7";
-                      const isSelected = selectedApptId === appt.apptId;
+                      const typeStyle = (appt.type === "Follow-up" || appt.type === "Follow up")
+                        ? { color: "#0D9B5C", bg: "#E8F8F0" }
+                        : { color: "#2E7DF7", bg: "#E8F0FF" };
+                      // Highlight the first row as 'Next'
+                      const isNext = i === 0;
 
                       return (
                         <tr
                           key={appt.apptId ?? i}
-                          className={`at-row ${isSelected ? "at-row-selected" : ""}`}
-                          onClick={() => handleSelectPatient(appt)}
+                          className={`at-row ${isNext ? "at-row-selected" : ""}`}
                         >
                           {/* Time */}
                           <td className="at-time-cell">
-                            <div className={`at-time-wrap ${isSelected ? "at-time-selected" : ""}`}>
-                              <span className="at-time" style={isSelected ? { color: "#2E7DF7" } : {}}>
+                            <div className={`at-time-wrap ${isNext ? "at-time-selected" : ""}`}>
+                              <span className="at-time" style={isNext ? { color: "#2E7DF7" } : {}}>
                                 {appt.startTime}
                               </span>
-                              {isSelected && <span className="at-next-badge">Next</span>}
+                              {isNext && <span className="at-next-badge">Next</span>}
                             </div>
                           </td>
 
@@ -218,17 +243,31 @@ const AppointmentTable = ({ selectedDate, currentPage, onPageChange, onNextDay, 
                             </div>
                           </td>
 
+                          {/* Principle Doctor */}
+                          <td>
+                            <div className="at-doctor-cell">
+                              <AvatarInitials name={appt.providerName} cls="at-doctor-avatar" />
+                              <div className="at-patient-info">
+                                <span className="at-patient-name" style={{ fontSize: "0.82rem" }}>{appt.providerName || "—"}</span>
+                              </div>
+                            </div>
+                          </td>
+
                           {/* Type / Issue */}
                           <td>
                             <div className="at-type-cell">
                               <span
                                 className="at-type-text"
-                                style={{ color: typeColor }}
+                                style={{ color: typeStyle.color, background: typeStyle.bg }}
                               >
                                 {appt.type}
                               </span>
-                              <span className="at-issue">{appt.reason}</span>
                             </div>
+                          </td>
+
+                          {/* Chief Complaint */}
+                          <td>
+                            <span className="at-issue">{appt.reason || "—"}</span>
                           </td>
 
                           {/* Status */}
@@ -260,10 +299,6 @@ const AppointmentTable = ({ selectedDate, currentPage, onPageChange, onNextDay, 
                         </tr>
                       );
                     })}
-                    {/* Filler rows to keep fixed height */}
-                    {Array.from({ length: emptyRowCount }).map((_, i) => (
-                      <EmptyRow key={`filler-${i}`} />
-                    ))}
                   </tbody>
                 </table>
               </div>
@@ -279,17 +314,6 @@ const AppointmentTable = ({ selectedDate, currentPage, onPageChange, onNextDay, 
             )}
           </div>
         </div>
-
-        {/* ── Patient Detail Panel ── */}
-        {(selectedPatient || detailLoading) && (
-          <div className="at-panel-container">
-            <PatientDetailPanel
-              patient={selectedPatient}
-              loading={detailLoading}
-              onClose={handleClosePanel}
-            />
-          </div>
-        )}
       </div>
 
       <style>{`
@@ -467,6 +491,14 @@ const AppointmentTable = ({ selectedDate, currentPage, onPageChange, onNextDay, 
           color: #2E7DF7; font-size: 0.8rem; font-weight: 700;
           display: flex; align-items: center; justify-content: center;
         }
+        /* Doctor cell */
+        .at-doctor-cell { display: flex; align-items: center; gap: 8px; }
+        .at-doctor-avatar {
+          width: 28px; height: 28px; border-radius: 50%; flex-shrink: 0;
+          background: #F0FDF4;
+          color: #059669; font-size: 0.72rem; font-weight: 700;
+          display: flex; align-items: center; justify-content: center;
+        }
         .at-patient-info { display: flex; flex-direction: column; gap: 2px; }
         .at-patient-name { font-weight: 600; color: #1a1a2e; white-space: nowrap; font-size: 0.85rem; }
         .at-patient-meta { font-size: 0.75rem; color: #6b7280; white-space: nowrap; }
@@ -474,7 +506,8 @@ const AppointmentTable = ({ selectedDate, currentPage, onPageChange, onNextDay, 
         /* Type cell */
         .at-type-cell { display: flex; flex-direction: column; gap: 2px; }
         .at-type-text {
-          font-size: 0.8rem; font-weight: 600; width: fit-content;
+          font-size: 0.78rem; font-weight: 600; width: fit-content;
+          padding: 3px 8px; border-radius: 6px; display: inline-block;
         }
         .at-issue { font-size: 0.75rem; color: #6b7280; }
 
@@ -586,6 +619,25 @@ const AppointmentTable = ({ selectedDate, currentPage, onPageChange, onNextDay, 
         }
         .at-skeleton-row td { padding: 18px 16px; }
         .at-skeleton-row:last-child td { border-bottom: none; }
+
+        .at-empty-btn-filled {
+          display: inline-flex;
+          align-items: center;
+          gap: 8px;
+          padding: 10px 24px;
+          border: 1.5px solid #2E7DF7;
+          border-radius: 8px;
+          background: #2E7DF7;
+          color: #fff;
+          font-size: 0.85rem;
+          font-weight: 600;
+          cursor: pointer;
+          transition: all 0.18s;
+        }
+        .at-empty-btn-filled:hover {
+          background: #1b63cc;
+          border-color: #1b63cc;
+        }
       `}</style>
     </>
   );

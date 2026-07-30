@@ -3,11 +3,11 @@ import { MdCalendarToday, MdOutlineEventBusy } from "react-icons/md";
 import useAppointmentStats from "./useAppointmentStats";
 
 const ICON_CONFIG = {
-  total:     { icon: <MdCalendarToday />,    iconBg: "#E8F0FF", iconColor: "#2E7DF7" },
-  completed: { icon: <BsCalendarCheck />,    iconBg: "#E8F8F0", iconColor: "#0D9B5C" },
-  pending:   { icon: <MdOutlineEventBusy />, iconBg: "#FFF8E8", iconColor: "#F59E0B" },
-  cancelled: { icon: <BsCalendarX />,        iconBg: "#FFE8E8", iconColor: "#E74C3C" },
-  noShow:    { icon: <BsCalendarMinus />,    iconBg: "#FFF8E8", iconColor: "#F59E0B" },
+  total:     { icon: <MdCalendarToday />,    iconBg: "#E8F0FF", iconColor: "#2E7DF7", percentage: "+55%", percentColor: "#10b981" },
+  completed: { icon: <BsCalendarCheck />,    iconBg: "#E8F8F0", iconColor: "#0D9B5C", percentage: "+55%", percentColor: "#10b981" },
+  pending:   { icon: <MdOutlineEventBusy />, iconBg: "#FFF8E8", iconColor: "#F59E0B", percentage: "+55%", percentColor: "#10b981" },
+  cancelled: { icon: <BsCalendarX />,        iconBg: "#FFE8E8", iconColor: "#E74C3C", percentage: "-3%", percentColor: "#E74C3C" },
+  noShow:    { icon: <BsCalendarMinus />,    iconBg: "#FFF8E8", iconColor: "#F59E0B", percentage: "+55%", percentColor: "#10b981" },
 };
 
 /** Map stat key → tab name used in AppointmentTable */
@@ -19,8 +19,8 @@ const KEY_TO_TAB = {
   noShow:    "No Show",
 };
 
-const AppointmentStats = ({ selectedDate, onFilterSelect }) => {
-  const { stats, loading } = useAppointmentStats(selectedDate);
+const AppointmentStats = ({ selectedDate, onFilterSelect, refreshKey }) => {
+  const { stats, loading } = useAppointmentStats(selectedDate, refreshKey);
 
   const handleCardClick = (key) => {
     if (onFilterSelect) onFilterSelect(KEY_TO_TAB[key] || "All Appointments");
@@ -52,6 +52,11 @@ const AppointmentStats = ({ selectedDate, onFilterSelect }) => {
                     <span className="as-label">{s.label}</span>
                     <div className="as-value-row">
                       <span className="as-value">{s.value}</span>
+                      {cfg.percentage && (
+                        <span style={{ color: cfg.percentColor, fontSize: '0.75rem', fontWeight: 600, marginLeft: '4px' }}>
+                          {cfg.percentage}
+                        </span>
+                      )}
                     </div>
                   </div>
                   <div

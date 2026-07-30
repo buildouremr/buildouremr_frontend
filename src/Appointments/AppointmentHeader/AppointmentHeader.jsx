@@ -32,7 +32,7 @@ const AppointmentHeader = ({ selectedDate, onDateChange, onNewAppointment }) => 
         <div className="ah-right">
           <button className="ah-new-btn" onClick={handleNewAppointment}>
             <MdAdd style={{ fontSize: "1.1rem" }} />
-            <span>New Appointment</span>
+            <span>Create Appointment</span>
           </button>
 
           {/* Date Navigator */}

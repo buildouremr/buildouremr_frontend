@@ -56,7 +56,7 @@ const getChronicBadgeStyle = (diseaseName) => {
   return { color: '#0D9B5C', background: '#E8F8F0' };
 };
 
-const PatientTable = () => {
+const PatientTable = ({ refreshTrigger }) => {
   const observerRef = useRef(null);
   const [rowsPerPage, setRowsPerPage] = useState(10);
 
@@ -80,7 +80,7 @@ const PatientTable = () => {
     chronicDiseases, selectedDiseases, setSelectedDiseases,
     loading, error, searchQuery, totalPages, currentPage,
     handleTabChange, handleSearchChange, handlePageChange
-  } = usePatientTable({ rowsPerPage });
+  } = usePatientTable({ rowsPerPage, refreshTrigger });
 
   const emptyRowCount = loading || error || pagePatients.length === 0
     ? 0
