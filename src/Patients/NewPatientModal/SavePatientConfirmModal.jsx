@@ -1,5 +1,5 @@
 import React from "react";
-import { MdOutlineSave } from "react-icons/md";
+import { Save } from 'lucide-react';
 
 const SavePatientConfirmModal = ({ onConfirm, onCancel, loading }) => {
   return (
@@ -12,7 +12,7 @@ const SavePatientConfirmModal = ({ onConfirm, onCancel, loading }) => {
           
           <div className="spcm-body">
             <div className="spcm-icon-wrapper">
-              <MdOutlineSave className="spcm-icon" />
+              <Save className="spcm-icon" />
             </div>
             
             <h2 className="spcm-title">Save Created Patient</h2>

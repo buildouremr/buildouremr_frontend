@@ -1,13 +1,12 @@
 import React, { useState } from "react";
-import { MdClose, MdPersonOutline, MdOutlinePhone, MdOutlineEmail, MdOutlineMale, MdOutlineLocationOn, MdCalendarToday, MdOutlineDescription } from "react-icons/md";
-import { FaStethoscope } from "react-icons/fa";
-import { GiMedicalDrip } from "react-icons/gi";
+
 import DatePicker from "../../components/DatePicker/DatePicker";
 import Dropdown from "../../components/Dropdown/Dropdown";
 import PatientSearchInput from "../../components/PatientSearchInput/PatientSearchInput";
 import ConfirmModal from "../../components/ConfirmModal/ConfirmModal";
 import SavePatientConfirmModal from "./SavePatientConfirmModal";
 import useNewPatientModal from "./useNewPatientModal";
+import { X, User, Phone, Mail, MapPin, Calendar, FileText, Stethoscope, Syringe } from 'lucide-react';
 
 const GENDER_OPTIONS = [
   { value: "Male", label: "Male" },
@@ -136,7 +135,7 @@ const NewPatientModal = ({ onClose, onSuccess, onError }) => {
           <div className="npm-header">
             <h2>Create New Patient &amp; Schedule Appointment</h2>
             <button className="npm-close-btn" onClick={handleAttemptClose}>
-              <MdClose />
+              <X />
             </button>
           </div>
 
@@ -157,7 +156,7 @@ const NewPatientModal = ({ onClose, onSuccess, onError }) => {
                     onChange={(e) => handleChange("patientType", e.target.value)}
                   />
                   <div className="npm-radio-circle"></div>
-                  <MdPersonOutline className="npm-card-icon" /> Existing Patient
+                  <User className="npm-card-icon" /> Existing Patient
                 </label>
                 <label className={`npm-type-card ${formData.patientType === "New Patient" ? "active" : ""}`}>
                   <input
@@ -168,7 +167,7 @@ const NewPatientModal = ({ onClose, onSuccess, onError }) => {
                     onChange={(e) => handleChange("patientType", e.target.value)}
                   />
                   <div className="npm-radio-circle"></div>
-                  <MdPersonOutline className="npm-card-icon" /> New Patient
+                  <User className="npm-card-icon" /> New Patient
                 </label>
               </div>
             </div>
@@ -205,7 +204,7 @@ const NewPatientModal = ({ onClose, onSuccess, onError }) => {
               <h3 className="npm-section-title">Patient Details</h3>
               <div className="npm-grid">
                 <div className="npm-field" style={{ position: "relative" }}>
-                  <label><MdPersonOutline /> First Name</label>
+                  <label><User /> First Name</label>
                   <input
                     type="text"
                     placeholder="First Name"
@@ -224,7 +223,7 @@ const NewPatientModal = ({ onClose, onSuccess, onError }) => {
                   )}
                 </div>
                 <div className="npm-field" style={{ position: "relative" }}>
-                  <label><MdPersonOutline /> Last Name</label>
+                  <label><User /> Last Name</label>
                   <input
                     type="text"
                     placeholder="Last Name"
@@ -243,7 +242,7 @@ const NewPatientModal = ({ onClose, onSuccess, onError }) => {
                   )}
                 </div>
                 <div className="npm-field">
-                  <label><MdCalendarToday /> Date of Birth</label>
+                  <label><Calendar /> Date of Birth</label>
                   <DatePicker
                     value={formData.dateOfBirth}
                     onChange={(v) => handleChange("dateOfBirth", v)}
@@ -251,7 +250,7 @@ const NewPatientModal = ({ onClose, onSuccess, onError }) => {
                   />
                 </div>
                 <div className="npm-field">
-                  <label><MdOutlineMale /> Gender</label>
+                  <label><User /> Gender</label>
                   <Dropdown
                     options={GENDER_OPTIONS}
                     value={formData.gender}
@@ -260,7 +259,7 @@ const NewPatientModal = ({ onClose, onSuccess, onError }) => {
                   />
                 </div>
                 <div className="npm-field">
-                  <label><MdOutlinePhone /> Phone Number</label>
+                  <label><Phone /> Phone Number</label>
                   <input
                     type="text"
                     placeholder="(+91) 98876xxxxx"
@@ -269,7 +268,7 @@ const NewPatientModal = ({ onClose, onSuccess, onError }) => {
                   />
                 </div>
                 <div className="npm-field">
-                  <label><MdOutlineEmail /> Email id</label>
+                  <label><Mail /> Email id</label>
                   <input
                     type="email"
                     placeholder="Name@gmail.com"
@@ -278,7 +277,7 @@ const NewPatientModal = ({ onClose, onSuccess, onError }) => {
                   />
                 </div>
                 <div className="npm-field">
-                  <label><MdOutlinePhone /> Emergency Contact</label>
+                  <label><Phone /> Emergency Contact</label>
                   <input
                     type="text"
                     placeholder="(+91) 98876xxxxx"
@@ -287,7 +286,7 @@ const NewPatientModal = ({ onClose, onSuccess, onError }) => {
                   />
                 </div>
                 <div className="npm-field">
-                  <label><MdOutlineLocationOn /> Location</label>
+                  <label><MapPin /> Location</label>
                   <input
                     type="text"
                     placeholder="XYZ Street, city ,town"
@@ -303,7 +302,7 @@ const NewPatientModal = ({ onClose, onSuccess, onError }) => {
               <h3 className="npm-section-title">Clinical Baseline</h3>
               <div className="npm-grid">
                 <div className="npm-field">
-                  <label><MdOutlineDescription /> Chief Complaint</label>
+                  <label><FileText /> Chief Complaint</label>
                   <input
                     type="text"
                     placeholder="Quarterly Heart Check up"
@@ -312,7 +311,7 @@ const NewPatientModal = ({ onClose, onSuccess, onError }) => {
                   />
                 </div>
                 <div className="npm-field">
-                  <label><GiMedicalDrip /> Known Allergies</label>
+                  <label><Syringe /> Known Allergies</label>
                   <TagInputBelow
                     tags={formData.knownAllergies}
                     onAdd={(val) => addTag("knownAllergies", val)}
@@ -321,7 +320,7 @@ const NewPatientModal = ({ onClose, onSuccess, onError }) => {
                   />
                 </div>
                 <div className="npm-field npm-field-full">
-                  <label><GiMedicalDrip /> Chronic History</label>
+                  <label><Syringe /> Chronic History</label>
                   <TagInputBelow
                     tags={formData.chronicHistory}
                     onAdd={(val) => addTag("chronicHistory", val)}
@@ -337,7 +336,7 @@ const NewPatientModal = ({ onClose, onSuccess, onError }) => {
               <h3 className="npm-section-title">Appointment Details</h3>
               <div className="npm-grid">
                 <div className="npm-field">
-                  <label><FaStethoscope /> Select Doctor</label>
+                  <label><Stethoscope /> Select Doctor</label>
                   <Dropdown
                     options={doctors.map((d) => ({ value: d.id, label: d.name }))}
                     value={formData.doctorId}
@@ -346,7 +345,7 @@ const NewPatientModal = ({ onClose, onSuccess, onError }) => {
                   />
                 </div>
                 <div className="npm-field">
-                  <label><MdCalendarToday /> Date of Appointment</label>
+                  <label><Calendar /> Date of Appointment</label>
                   <DatePicker
                     value={formData.appointmentDate}
                     onChange={(v) => handleChange("appointmentDate", v)}

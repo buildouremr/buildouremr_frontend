@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
-import { MdKeyboardArrowDown, MdCheck } from "react-icons/md";
+import { ChevronDown, Check } from 'lucide-react';
 
 /**
  * Reusable Dropdown
@@ -43,7 +43,7 @@ const Dropdown = ({ options = [], value, onChange, placeholder = "Select...", id
           <span className={selected ? "dd-value" : "dd-placeholder"}>
             {selected ? selected.label : placeholder}
           </span>
-          <MdKeyboardArrowDown
+          <ChevronDown
             className="dd-arrow"
             style={{ transform: open ? "rotate(180deg)" : "rotate(0deg)" }}
           />
@@ -61,7 +61,7 @@ const Dropdown = ({ options = [], value, onChange, placeholder = "Select...", id
                   onClick={() => { onChange(opt.value); setOpen(false); }}
                 >
                   <span>{opt.label}</span>
-                  {isActive && <MdCheck className="dd-check" />}
+                  {isActive && <Check className="dd-check" />}
                 </button>
               );
             })}

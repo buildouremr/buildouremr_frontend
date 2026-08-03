@@ -1,5 +1,5 @@
 import useTopbar from "./useTopbar";
-import { MdSearch, MdNotifications, MdSettings } from "react-icons/md";
+import { Search, Bell, Settings } from 'lucide-react';
 
 const Topbar = () => {
   const { search, handleSearch } = useTopbar();
@@ -8,17 +8,17 @@ const Topbar = () => {
     <>
       <div className="tb-topbar">
         <div className="tb-search-wrap">
-          <MdSearch className="tb-search-icon" />
+          <Search className="tb-search-icon" />
           <input type="text" placeholder="Search Keyword" value={search}
             onChange={handleSearch} className="tb-search-input" />
         </div>
         <div className="tb-right">
-          <button className="tb-icon-btn"><MdSettings style={{ fontSize: "1.2rem", color: "#6b7280" }} /></button>
+          <button className="tb-icon-btn"><Settings style={{ fontSize: "1.2rem", color: "#6b7280" }} /></button>
           <button className="tb-icon-btn tb-notif-btn">
-            <MdNotifications style={{ fontSize: "1.2rem", color: "#6b7280" }} />
+            <Bell style={{ fontSize: "1.2rem", color: "#6b7280" }} />
             <span className="tb-notif-dot"></span>
           </button>
-          <button className="tb-icon-btn"><MdSettings style={{ fontSize: "1.2rem", color: "#6b7280" }} /></button>
+          <button className="tb-icon-btn"><Settings style={{ fontSize: "1.2rem", color: "#6b7280" }} /></button>
           <img src="https://i.pravatar.cc/34?img=11" alt="profile" className="tb-profile" />
         </div>
       </div>

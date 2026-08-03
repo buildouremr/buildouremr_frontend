@@ -1,4 +1,4 @@
-import { MdAdd } from "react-icons/md";
+import { Plus } from 'lucide-react';
 
 const PatientHeader = ({ onCreatePatient }) => {
   return (
@@ -7,7 +7,7 @@ const PatientHeader = ({ onCreatePatient }) => {
         <h1 className="ph-title">Patients</h1>
         <div className="ph-right">
           <button className="ph-new-btn" onClick={onCreatePatient}>
-            <MdAdd style={{ fontSize: "1.1rem" }} />
+            <Plus style={{ fontSize: "1.1rem" }} />
             <span>Create new patient</span>
           </button>
         </div>

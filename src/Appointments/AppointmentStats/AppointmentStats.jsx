@@ -1,13 +1,14 @@
-import { BsCalendarCheck, BsCalendarX, BsCalendarMinus } from "react-icons/bs";
-import { MdCalendarToday, MdOutlineEventBusy } from "react-icons/md";
+
+
 import useAppointmentStats from "./useAppointmentStats";
+import { CalendarCheck, CalendarX, UserX, Calendar, CalendarClock } from 'lucide-react';
 
 const ICON_CONFIG = {
-  total:     { icon: <MdCalendarToday />,    iconBg: "#E8F0FF", iconColor: "#2E7DF7", percentage: "+55%", percentColor: "#10b981" },
-  completed: { icon: <BsCalendarCheck />,    iconBg: "#E8F8F0", iconColor: "#0D9B5C", percentage: "+55%", percentColor: "#10b981" },
-  pending:   { icon: <MdOutlineEventBusy />, iconBg: "#FFF8E8", iconColor: "#F59E0B", percentage: "+55%", percentColor: "#10b981" },
-  cancelled: { icon: <BsCalendarX />,        iconBg: "#FFE8E8", iconColor: "#E74C3C", percentage: "-3%", percentColor: "#E74C3C" },
-  noShow:    { icon: <BsCalendarMinus />,    iconBg: "#FFF8E8", iconColor: "#F59E0B", percentage: "+55%", percentColor: "#10b981" },
+  total:     { icon: <Calendar />,    iconBg: "#E8F0FF", iconColor: "#2E7DF7", percentage: "+55%", percentColor: "#10b981" },
+  completed: { icon: <CalendarCheck />,    iconBg: "#E8F8F0", iconColor: "#0D9B5C", percentage: "+55%", percentColor: "#10b981" },
+  pending:   { icon: <CalendarClock />, iconBg: "#FFF8E8", iconColor: "#F59E0B", percentage: "+55%", percentColor: "#10b981" },
+  cancelled: { icon: <CalendarX />,        iconBg: "#FFE8E8", iconColor: "#E74C3C", percentage: "-3%", percentColor: "#E74C3C" },
+  noShow:    { icon: <UserX />,    iconBg: "#FFF8E8", iconColor: "#F59E0B", percentage: "+55%", percentColor: "#10b981" },
 };
 
 /** Map stat key → tab name used in AppointmentTable */

@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
 import useLogin from './useLogin';
 import ForgotPassword from './ForgotPassword';
-import { MdOutlineMailOutline } from "react-icons/md";
-import { FaLock } from "react-icons/fa6";
+import { Mail, Lock } from 'lucide-react';
 
 const Login = ({ onLoginSuccess }) => {
   const [showForgot, setShowForgot] = useState(false);
@@ -44,7 +43,7 @@ const Login = ({ onLoginSuccess }) => {
                   ...styles.inputGroup,
                   border: emailError ? '1px solid red' : '1px solid #ccc'
                 }}>
-                  <span style={styles.icon}> <MdOutlineMailOutline style={styles.email} /> </span>
+                  <span style={styles.icon}> <Mail style={styles.email} /> </span>
                   <input
                     id="login-email"
                     type="email"
@@ -68,7 +67,7 @@ const Login = ({ onLoginSuccess }) => {
                   border: passwordError ? '1px solid red' : '1px solid #ccc'
                 }}>
                   <span style={styles.icon}>
-                    <FaLock style={styles.password} />
+                    <Lock style={styles.password} />
                   </span>
                   <input
                     id="login-password"

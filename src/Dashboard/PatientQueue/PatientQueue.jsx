@@ -1,6 +1,7 @@
 import usePatientQueue from "./usePatientQueue";
-import { MdPerson, MdCalendarMonth } from "react-icons/md";
+
 import Pagination from "../../components/Pagination/Pagination";
+import { User, Calendar } from 'lucide-react';
 
 const MAX_ROWS = 5;
 
@@ -41,7 +42,7 @@ const PatientQueue = ({ selectedDate, onViewAll }) => {
           /* Empty state still takes fixed height */
           <div className="pq-fixed-area pq-empty-state">
             <div className="pq-empty-icon">
-              <MdCalendarMonth style={{ fontSize: "1.6rem", color: "#fff" }} />
+              <Calendar style={{ fontSize: "1.6rem", color: "#fff" }} />
             </div>
             <h3 className="pq-empty-title">You're all caught up!</h3>
             <p className="pq-empty-text">
@@ -84,7 +85,7 @@ const PatientQueue = ({ selectedDate, onViewAll }) => {
                     <td>
                       <div className="pq-name-cell">
                         <div className="pq-avatar">
-                          <MdPerson style={{ fontSize: "1rem", color: "#6b7280" }} />
+                          <User style={{ fontSize: "1rem", color: "#6b7280" }} />
                         </div>
                         {p.name}
                       </div>
@@ -93,7 +94,7 @@ const PatientQueue = ({ selectedDate, onViewAll }) => {
                     <td>
                       <div className="pq-name-cell">
                         <div className="pq-avatar pq-avatar-doc">
-                          <MdPerson style={{ fontSize: "1rem", color: "#2E7DF7" }} />
+                          <User style={{ fontSize: "1rem", color: "#2E7DF7" }} />
                         </div>
                         {p.doctorName}
                       </div>

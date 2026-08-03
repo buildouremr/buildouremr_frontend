@@ -1,25 +1,15 @@
 import React, { useState } from "react";
-import {
-  MdClose,
-  MdPersonOutline,
-  MdPersonAddAlt1,
-  MdOutlinePhone,
-  MdOutlineEmail,
-  MdOutlineMale,
-  MdOutlineLocationOn,
-  MdCalendarToday,
-  MdOutlineDescription,
-} from "react-icons/md";
-import { FaStethoscope } from "react-icons/fa";
+
 import DatePicker from "../../components/DatePicker/DatePicker";
 import Dropdown from "../../components/Dropdown/Dropdown";
 import ConfirmModal from "../../components/ConfirmModal/ConfirmModal";
 import useNewAppointmentModal from "./useNewAppointmentModal";
+import { X, User, UserPlus, Phone, Mail, MapPin, Calendar, FileText, Stethoscope } from 'lucide-react';
 
 const GENDER_OPTIONS = [
-  { value: "Male",   label: "Male"   },
+  { value: "Male", label: "Male" },
   { value: "Female", label: "Female" },
-  { value: "Other",  label: "Other"  },
+  { value: "Other", label: "Other" },
 ];
 
 // Inline patient search dropdown
@@ -100,7 +90,7 @@ const NewAppointmentModal = ({ onClose, onSuccess, onError }) => {
           <div className="nam-header">
             <h2 id="nam-title">New Appointments</h2>
             <button type="button" className="nam-close-btn" onClick={handleAttemptClose} aria-label="Close">
-              <MdClose />
+              <X />
             </button>
           </div>
 
@@ -121,7 +111,7 @@ const NewAppointmentModal = ({ onClose, onSuccess, onError }) => {
                     onChange={() => handlePatientTypeChange("Existing Patient")}
                   />
                   <div className="nam-radio-circle" />
-                  <MdPersonOutline className="nam-card-icon" />
+                  <User className="nam-card-icon" />
                   Existing Patient
                 </label>
                 <label className={`nam-type-card ${!isExisting ? "active" : ""}`}>
@@ -133,7 +123,7 @@ const NewAppointmentModal = ({ onClose, onSuccess, onError }) => {
                     onChange={() => handlePatientTypeChange("New Patient")}
                   />
                   <div className="nam-radio-circle" />
-                  <MdPersonAddAlt1 className="nam-card-icon" />
+                  <UserPlus className="nam-card-icon" />
                   New Patient
                 </label>
               </div>
@@ -147,7 +137,7 @@ const NewAppointmentModal = ({ onClose, onSuccess, onError }) => {
                 {/* First Name */}
                 <div className="nam-field" style={{ position: "relative" }}>
                   <label htmlFor="nam-firstName">
-                    <MdPersonOutline /> First Name
+                    <User /> First Name
                     {!isExisting && <span className="nam-req">*</span>}
                     {isExisting && <span className="nam-req">*</span>}
                   </label>
@@ -170,7 +160,7 @@ const NewAppointmentModal = ({ onClose, onSuccess, onError }) => {
 
                 {/* Last Name */}
                 <div className="nam-field" style={{ position: "relative" }}>
-                  <label htmlFor="nam-lastName"><MdPersonOutline /> Last Name</label>
+                  <label htmlFor="nam-lastName"><User /> Last Name</label>
                   <input
                     id="nam-lastName"
                     type="text"
@@ -191,7 +181,7 @@ const NewAppointmentModal = ({ onClose, onSuccess, onError }) => {
                 {/* Phone Number */}
                 <div className="nam-field">
                   <label htmlFor="nam-phone">
-                    <MdOutlinePhone /> Phone Number
+                    <Phone /> Phone Number
                     {!isExisting && <span className="nam-req">*</span>}
                   </label>
                   <input
@@ -208,7 +198,7 @@ const NewAppointmentModal = ({ onClose, onSuccess, onError }) => {
 
                 {/* Email */}
                 <div className="nam-field">
-                  <label htmlFor="nam-email"><MdOutlineEmail /> Email id</label>
+                  <label htmlFor="nam-email"><Mail /> Email id</label>
                   <input
                     id="nam-email"
                     type="email"
@@ -221,7 +211,7 @@ const NewAppointmentModal = ({ onClose, onSuccess, onError }) => {
 
                 {/* Date of Birth */}
                 <div className="nam-field">
-                  <label><MdCalendarToday /> Date of Birth</label>
+                  <label><Calendar /> Date of Birth</label>
                   <DatePicker
                     value={formData.dateOfBirth}
                     onChange={(v) => handleChange("dateOfBirth", v)}
@@ -234,7 +224,7 @@ const NewAppointmentModal = ({ onClose, onSuccess, onError }) => {
                 {/* Gender */}
                 <div className="nam-field">
                   <label>
-                    <MdOutlineMale /> Gender
+                    <User /> Gender
                     {!isExisting && <span className="nam-req">*</span>}
                   </label>
                   <Dropdown
@@ -250,7 +240,7 @@ const NewAppointmentModal = ({ onClose, onSuccess, onError }) => {
 
                 {/* Location */}
                 <div className="nam-field">
-                  <label htmlFor="nam-location"><MdOutlineLocationOn /> Location</label>
+                  <label htmlFor="nam-location"><MapPin /> Location</label>
                   <input
                     id="nam-location"
                     type="text"
@@ -263,7 +253,7 @@ const NewAppointmentModal = ({ onClose, onSuccess, onError }) => {
 
                 {/* Chronic Disease */}
                 <div className="nam-field">
-                  <label htmlFor="nam-chronic"><FaStethoscope /> Chronic Disease</label>
+                  <label htmlFor="nam-chronic"><Stethoscope /> Chronic Disease</label>
                   <input
                     id="nam-chronic"
                     type="text"
@@ -276,17 +266,6 @@ const NewAppointmentModal = ({ onClose, onSuccess, onError }) => {
 
               </div>
 
-              {/* Existing Patient selection hint */}
-              {isExisting && !formData.patientId && (
-                <p className="nam-search-hint">
-                  Type the patient's name above to search and select from existing records.
-                </p>
-              )}
-              {isExisting && formData.patientId && (
-                <p className="nam-selected-hint">
-                  ✓ Patient selected. <button type="button" className="nam-clear-patient" onClick={() => handlePatientTypeChange("Existing Patient")}>Change</button>
-                </p>
-              )}
             </div>
 
             {/* ── Appointment Details ── */}
@@ -294,7 +273,7 @@ const NewAppointmentModal = ({ onClose, onSuccess, onError }) => {
               <h3 className="nam-section-title">Appointment Details</h3>
               <div className="nam-grid">
                 <div className="nam-field">
-                  <label><FaStethoscope /> Select Doctor <span className="nam-req">*</span></label>
+                  <label><Stethoscope /> Select Doctor <span className="nam-req">*</span></label>
                   <Dropdown
                     options={doctors.map((d) => ({ value: String(d.id), label: d.name }))}
                     value={formData.doctorId}
@@ -305,7 +284,7 @@ const NewAppointmentModal = ({ onClose, onSuccess, onError }) => {
                   <FieldError msg={validationErrors.doctorId} />
                 </div>
                 <div className="nam-field">
-                  <label><MdCalendarToday /> Date of Appointment <span className="nam-req">*</span></label>
+                  <label><Calendar /> Date of Appointment <span className="nam-req">*</span></label>
                   <DatePicker
                     value={formData.appointmentDate}
                     onChange={(v) => handleChange("appointmentDate", v)}
@@ -343,7 +322,7 @@ const NewAppointmentModal = ({ onClose, onSuccess, onError }) => {
             {/* ── Appointment Type & Chief Complaint ── */}
             <div className="nam-section nam-grid" style={{ marginBottom: 0 }}>
               <div className="nam-field">
-                <label><MdOutlineDescription /> Appointment Type <span className="nam-req">*</span></label>
+                <label><FileText /> Appointment Type <span className="nam-req">*</span></label>
                 <Dropdown
                   options={appointmentTypes.map((t) => ({ value: String(t.id), label: t.name }))}
                   value={formData.appointmentTypeId}
@@ -354,7 +333,7 @@ const NewAppointmentModal = ({ onClose, onSuccess, onError }) => {
                 <FieldError msg={validationErrors.appointmentTypeId} />
               </div>
               <div className="nam-field">
-                <label htmlFor="nam-complaint"><MdOutlineDescription /> Chief Complaint</label>
+                <label htmlFor="nam-complaint"><FileText /> Chief Complaint</label>
                 <input
                   id="nam-complaint"
                   type="text"

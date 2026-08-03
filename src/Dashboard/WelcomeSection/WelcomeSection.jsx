@@ -1,6 +1,6 @@
 import useWelcomeSection from "./useWelcomeSection";
 import DatePicker from "../../components/DatePicker/DatePicker";
-import { MdChevronLeft, MdChevronRight, MdAdd } from "react-icons/md";
+import { ChevronLeft, ChevronRight, Plus } from 'lucide-react';
 
 const WelcomeSection = ({ summaryData, summaryLoading, selectedDate, onDateChange, onViewAll }) => {
   const { doctorName, visitCount, formattedDate } =
@@ -45,7 +45,7 @@ const WelcomeSection = ({ summaryData, summaryLoading, selectedDate, onDateChang
 
         <div className="ws-right">
           <button className="ws-create-btn">
-            <MdAdd style={{ fontSize: "1.2rem", strokeWidth: 1 }} />
+            <Plus style={{ fontSize: "1.2rem", strokeWidth: 1 }} />
             Create Appointment
           </button>
 
@@ -54,21 +54,22 @@ const WelcomeSection = ({ summaryData, summaryLoading, selectedDate, onDateChang
               className="ws-nav-btn"
               onClick={(e) => { e.stopPropagation(); handlePrev(); }}
             >
-              <MdChevronLeft />
+              <ChevronLeft />
             </button>
             <div className="ws-picker-wrap">
-              <span className="ws-date-label">{formattedDate}</span>
               <DatePicker
                 value={toISO(selectedDate)}
                 onChange={handlePickerChange}
                 id="ws-date-picker"
+                customDisplay={formattedDate}
+                hideIcon={true}
               />
             </div>
             <button
               className="ws-nav-btn"
               onClick={(e) => { e.stopPropagation(); handleNext(); }}
             >
-              <MdChevronRight />
+              <ChevronRight />
             </button>
           </div>
         </div>
@@ -156,26 +157,22 @@ const WelcomeSection = ({ summaryData, summaryLoading, selectedDate, onDateChang
           border-right: 1px solid #e0e4ec;
           position: relative;
         }
-        .ws-date-label {
-          padding: 0 10px;
-          font-size: 0.87rem;
-          font-weight: 600;
-          color: #1a1a2e;
-          white-space: nowrap;
-          line-height: 34px;
-          user-select: none;
-        }
-        /* Hide the dp-display text; keep calendar icon as trigger */
+        
         #ws-date-picker .dp-wrap { position: static; }
         #ws-date-picker .dp-trigger {
           border: none;
           background: transparent;
-          padding: 0 8px 0 0;
+          padding: 0 10px;
           height: 34px;
           border-radius: 0;
         }
         #ws-date-picker .dp-trigger:hover { background: #f0f4ff; }
-        #ws-date-picker .dp-display { display: none; }
+        #ws-date-picker .dp-display { 
+          font-size: 0.87rem;
+          font-weight: 600;
+          color: #1a1a2e;
+          white-space: nowrap;
+        }
         #ws-date-picker .dp-calendar {
           left: auto;
           right: 0;

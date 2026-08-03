@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useCallback, useRef } from "react";
-import { MdCheckCircle, MdError, MdClose } from "react-icons/md";
+import { CheckCircle, AlertCircle, X } from 'lucide-react';
 
 // ── Context ──────────────────────────────────────────────────────────────────
 const ToastContext = createContext(null);
@@ -77,7 +77,7 @@ const ToastItem = ({ toast, onDismiss }) => {
       >
         {/* Icon badge */}
         <div className={`toast-icon-badge ${isSuccess ? "toast-icon-success" : "toast-icon-error"}`}>
-          {isSuccess ? <MdCheckCircle /> : <MdError />}
+          {isSuccess ? <CheckCircle /> : <AlertCircle />}
         </div>
 
         {/* Text */}
@@ -88,7 +88,7 @@ const ToastItem = ({ toast, onDismiss }) => {
 
         {/* Close */}
         <button className="toast-close" onClick={() => onDismiss(toast.id)}>
-          <MdClose />
+          <X />
         </button>
       </div>
 

@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect, useMemo } from "react";
-import { MdKeyboardArrowDown, MdCheck, MdSearch, MdClose } from "react-icons/md";
+import { ChevronDown, Check, Search, X } from 'lucide-react';
 
 /**
  * Reusable Multi-Select Filter Dropdown
@@ -67,7 +67,7 @@ const FilterDropdown = ({ options = [], selectedValues = [], onChange, placehold
                 ? normalised.find(o => o.value === selectedValues[0])?.label 
                 : `${selectedValues.length} Selected`}
           </span>
-          <MdKeyboardArrowDown
+          <ChevronDown
             className="fdd-arrow"
             style={{ transform: open ? "rotate(180deg)" : "rotate(0deg)" }}
           />
@@ -76,7 +76,7 @@ const FilterDropdown = ({ options = [], selectedValues = [], onChange, placehold
         {open && (
           <div className="fdd-menu">
             <div className="fdd-search-wrap">
-              <MdSearch className="fdd-search-icon" />
+              <Search className="fdd-search-icon" />
               <input 
                 type="text" 
                 className="fdd-search-input" 
@@ -94,7 +94,7 @@ const FilterDropdown = ({ options = [], selectedValues = [], onChange, placehold
                   className="fdd-unselect-all"
                   onClick={unselectAll}
                 >
-                  <MdClose className="fdd-unselect-icon" />
+                  <X className="fdd-unselect-icon" />
                   <span>Unselect All</span>
                 </button>
               )}

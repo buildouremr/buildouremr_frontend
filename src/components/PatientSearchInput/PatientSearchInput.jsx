@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
-import { MdSearch } from "react-icons/md";
+import { Search } from 'lucide-react';
 
 /**
  * PatientSearchInput — search bar + dropdown results styled as a mini-table.
@@ -50,7 +50,7 @@ const PatientSearchInput = ({
             onFocus={() => setFocused(true)}
             autoComplete="off"
           />
-          <MdSearch className="psi-icon" />
+          <Search className="psi-icon" />
         </div>
 
         {showDropdown && (

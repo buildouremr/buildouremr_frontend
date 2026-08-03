@@ -1,6 +1,7 @@
 import useAppointmentHeader from "./useAppointmentHeader";
-import { MdChevronLeft, MdChevronRight, MdAdd } from "react-icons/md";
+
 import DatePicker from "../../components/DatePicker/DatePicker";
+import { ChevronLeft, ChevronRight, Plus } from 'lucide-react';
 
 const toISO = (d) => {
   const dt = d instanceof Date ? d : new Date(d);
@@ -31,7 +32,7 @@ const AppointmentHeader = ({ selectedDate, onDateChange, onNewAppointment }) => 
         <h1 className="ah-title">Appointments</h1>
         <div className="ah-right">
           <button className="ah-new-btn" onClick={handleNewAppointment}>
-            <MdAdd style={{ fontSize: "1.1rem" }} />
+            <Plus style={{ fontSize: "1.1rem" }} />
             <span>Create Appointment</span>
           </button>
 
@@ -41,16 +42,16 @@ const AppointmentHeader = ({ selectedDate, onDateChange, onNewAppointment }) => 
               className="ah-nav-btn"
               onClick={(e) => { e.stopPropagation(); handlePrev(); }}
             >
-              <MdChevronLeft />
+              <ChevronLeft />
             </button>
 
-            {/* Custom DatePicker — trigger shows formatted label, picker opens on calendar icon click */}
             <div className="ah-picker-wrap">
-              <span className="ah-date-label">{formattedDate}</span>
               <DatePicker
                 value={isoValue}
                 onChange={handlePickerChange}
                 id="ah-date-picker"
+                customDisplay={formattedDate}
+                hideIcon={true}
               />
             </div>
 
@@ -58,7 +59,7 @@ const AppointmentHeader = ({ selectedDate, onDateChange, onNewAppointment }) => 
               className="ah-nav-btn"
               onClick={(e) => { e.stopPropagation(); handleNext(); }}
             >
-              <MdChevronRight />
+              <ChevronRight />
             </button>
           </div>
         </div>
@@ -107,6 +108,7 @@ const AppointmentHeader = ({ selectedDate, onDateChange, onNewAppointment }) => 
           border-radius: 8px;
           overflow: visible;
           background: #fff;
+          position: relative;
         }
         .ah-nav-btn {
           width: 32px;
@@ -131,27 +133,23 @@ const AppointmentHeader = ({ selectedDate, onDateChange, onNewAppointment }) => 
           border-right: 1px solid #e0e4ec;
           position: relative;
         }
-        .ah-date-label {
-          padding: 0 10px;
-          font-size: 0.87rem;
-          font-weight: 600;
-          color: #1a1a2e;
-          white-space: nowrap;
-          line-height: 36px;
-          user-select: none;
-        }
 
         /* Override DatePicker trigger for compact header use */
         #ah-date-picker .dp-wrap { position: static; }
         #ah-date-picker .dp-trigger {
           border: none;
           background: transparent;
-          padding: 0 8px 0 0;
+          padding: 0 10px;
           height: 36px;
           border-radius: 0;
         }
         #ah-date-picker .dp-trigger:hover { background: #f0f4ff; }
-        #ah-date-picker .dp-display { display: none; }
+        #ah-date-picker .dp-display { 
+          font-size: 0.87rem;
+          font-weight: 600;
+          color: #1a1a2e;
+          white-space: nowrap;
+        }
         #ah-date-picker .dp-calendar {
           left: auto;
           right: 0;

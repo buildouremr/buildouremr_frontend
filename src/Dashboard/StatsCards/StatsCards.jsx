@@ -1,10 +1,10 @@
 import useStatsCards from "./useStatsCards";
-import { MdPeopleAlt, MdCalendarMonth, MdEventBusy } from "react-icons/md";
+import { Users, Calendar, CalendarX } from 'lucide-react';
 
 const iconMap = {
-  pending: MdPeopleAlt,
-  appointments: MdCalendarMonth,
-  cancelled: MdEventBusy,
+  pending: Users,
+  appointments: Calendar,
+  cancelled: CalendarX,
 };
 
 /** Map card → appointments filter tab */

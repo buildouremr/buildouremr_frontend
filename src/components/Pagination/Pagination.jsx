@@ -1,4 +1,4 @@
-import { MdChevronLeft, MdChevronRight } from "react-icons/md";
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 /**
  * Build the page-number items to render.
@@ -61,7 +61,7 @@ const Pagination = ({ currentPage, totalPages, onPageChange }) => {
           onClick={() => onPageChange(currentPage - 1)}
           disabled={currentPage <= 1}
         >
-          <MdChevronLeft style={{ fontSize: "1.2rem", marginRight: "4px" }} />
+          <ChevronLeft style={{ fontSize: "1.2rem", marginRight: "4px" }} />
           Previous
         </button>
 
@@ -88,7 +88,7 @@ const Pagination = ({ currentPage, totalPages, onPageChange }) => {
           onClick={() => onPageChange(currentPage + 1)}
           disabled={currentPage >= safeTotal}
         >
-          Next <MdChevronRight style={{ fontSize: "1.2rem", marginLeft: "4px" }} />
+          Next <ChevronRight style={{ fontSize: "1.2rem", marginLeft: "4px" }} />
         </button>
       </div>
 

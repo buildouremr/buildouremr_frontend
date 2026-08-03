@@ -1,7 +1,8 @@
 import useAppointmentTable from "./useAppointmentTable";
 import { useState, useRef, useEffect, useCallback } from "react";
-import { MdMoreVert, MdSearch, MdCalendarMonth } from "react-icons/md";
+
 import Pagination from "../../components/Pagination/Pagination";
+import { MoreVertical, Search, Calendar } from 'lucide-react';
 
 // Height of a single data row (must match .at-table td height in CSS below)
 const ROW_HEIGHT = 57;
@@ -87,21 +88,24 @@ const AppointmentTable = ({ selectedDate, currentPage, onPageChange, onNextDay, 
   return (
     <>
       <div className="at-wrapper">
+        {/* Tabs Container */}
+        <div className="at-tabs-container">
+          <div className="at-tabs">
+            {tabs.map((tab) => (
+              <button
+                key={tab}
+                className={`at-tab ${activeTab === tab ? "at-tab-active" : ""}`}
+                onClick={() => handleTabChange(tab)}
+              >
+                {tab}{tabCounts[tab] > 0 && ` (${tabCounts[tab]})`}
+              </button>
+            ))}
+          </div>
+        </div>
+
         {/* ── Main table area ── */}
         <div className="at-main-container">
           <div className="at-main">
-            {/* Tabs */}
-            <div className="at-tabs">
-              {tabs.map((tab) => (
-                <button
-                  key={tab}
-                  className={`at-tab ${activeTab === tab ? "at-tab-active" : ""}`}
-                  onClick={() => handleTabChange(tab)}
-                >
-                  {tab}{tabCounts[tab] > 0 && ` (${tabCounts[tab]})`}
-                </button>
-              ))}
-            </div>
 
             {/* Queue header — search only shown when there are appointments */}
             <div className="at-queue-header">
@@ -115,7 +119,7 @@ const AppointmentTable = ({ selectedDate, currentPage, onPageChange, onNextDay, 
                     value={searchQuery}
                     onChange={(e) => handleSearchChange(e.target.value)}
                   />
-                  <MdSearch className="at-search-icon" />
+                  <Search className="at-search-icon" />
                 </div>
               )}
             </div>
@@ -177,7 +181,7 @@ const AppointmentTable = ({ selectedDate, currentPage, onPageChange, onNextDay, 
                     }
                   }}
                 >
-                  <MdCalendarMonth style={{ fontSize: "1.1rem" }} />
+                  <Calendar style={{ fontSize: "1.1rem" }} />
                   {activeTab === "Pending" || activeTab === "All Appointments" ? "View next day's schedule" :
                     activeTab === "Completed" ? "View Patients in queue" :
                       "View Pending Appointments"}
@@ -256,12 +260,16 @@ const AppointmentTable = ({ selectedDate, currentPage, onPageChange, onNextDay, 
                           {/* Type / Issue */}
                           <td>
                             <div className="at-type-cell">
-                              <span
-                                className="at-type-text"
-                                style={{ color: typeStyle.color, background: typeStyle.bg }}
-                              >
-                                {appt.type}
-                              </span>
+                              {appt.type && appt.type !== "" ? (
+                                <span
+                                  className="at-type-text"
+                                  style={{ color: typeStyle.color, background: typeStyle.bg }}
+                                >
+                                  {appt.type}
+                                </span>
+                              ) : (
+                                <span style={{ color: "#9ca3af" }}>--</span>
+                              )}
                             </div>
                           </td>
 
@@ -286,13 +294,13 @@ const AppointmentTable = ({ selectedDate, currentPage, onPageChange, onNextDay, 
                           <td onClick={(e) => e.stopPropagation()}>
                             <div className="at-actions-cell">
                               <button
-                                className="at-action-btn at-btn-outline"
+                                className="at-action-btn at-btn-solid"
                                 onClick={() => handleStartConsultation(appt)}
                               >
                                 Start Consultation
                               </button>
                               <button className="at-more-btn">
-                                <MdMoreVert />
+                                <MoreVertical />
                               </button>
                             </div>
                           </td>
@@ -319,9 +327,9 @@ const AppointmentTable = ({ selectedDate, currentPage, onPageChange, onNextDay, 
       <style>{`
         .at-wrapper {
           display: flex;
-          gap: 24px;
+          flex-direction: column;
+          gap: 20px;
           margin: 16px 28px 28px 28px;
-          align-items: stretch;
           flex: 1;
           overflow: hidden;
           min-height: 0;
@@ -343,15 +351,6 @@ const AppointmentTable = ({ selectedDate, currentPage, onPageChange, onNextDay, 
           overflow: hidden;
           flex: 1;
         }
-        .at-panel-container {
-          flex-shrink: 0;
-          width: 320px;
-          background: #fff;
-          border: 1px solid #eef0f5;
-          border-radius: 12px;
-          overflow: hidden;
-          align-self: stretch;
-        }
 
         /* Table area fills remaining height — no fixed min-height */
         .at-table-fixed {
@@ -362,23 +361,27 @@ const AppointmentTable = ({ selectedDate, currentPage, onPageChange, onNextDay, 
         }
 
         /* ── Tabs ── */
-        .at-tabs {
-          display: flex;
-          gap: 16px;
-          border-bottom: 1px solid #eef0f5;
-          padding: 0 20px;
+        .at-tabs-container {
+          background: #fff;
+          border-radius: 8px;
+          border: 1px solid #eef0f5;
+          padding: 0 16px;
           flex-shrink: 0;
         }
+        .at-tabs {
+          display: flex;
+          gap: 24px;
+        }
         .at-tab {
-          padding: 16px 4px;
+          padding: 16px 0;
           border: none;
           background: none;
-          font-size: 0.85rem;
-          font-weight: 500;
-          color: #6b7280;
+          font-size: 0.95rem;
+          font-weight: 600;
+          color: #1a1a2e;
           cursor: pointer;
           white-space: nowrap;
-          border-bottom: 2px solid transparent;
+          border-bottom: 3px solid transparent;
           margin-bottom: -1px;
           transition: all 0.15s;
         }
@@ -386,7 +389,6 @@ const AppointmentTable = ({ selectedDate, currentPage, onPageChange, onNextDay, 
         .at-tab-active {
           color: #2E7DF7 !important;
           border-bottom-color: #2E7DF7 !important;
-          font-weight: 600;
         }
 
         /* ── Queue header ── */
@@ -399,7 +401,7 @@ const AppointmentTable = ({ selectedDate, currentPage, onPageChange, onNextDay, 
         }
         .at-queue-title {
           font-size: 0.95rem;
-          font-weight: 700;
+          font-weight: 600;
           color: #1a1a2e;
         }
         .at-search-wrap {
@@ -439,7 +441,7 @@ const AppointmentTable = ({ selectedDate, currentPage, onPageChange, onNextDay, 
           padding: 12px 16px;
           text-align: left;
           font-weight: 600;
-          font-size: 0.8rem;
+          font-size: 14px;
           color: #4b5563;
           white-space: nowrap;
         }
@@ -479,7 +481,7 @@ const AppointmentTable = ({ selectedDate, currentPage, onPageChange, onNextDay, 
         .at-next-badge {
           display: inline-block; margin-top: 3px;
           background: #2E7DF7; color: #fff;
-          font-size: 0.6rem; font-weight: 700;
+          font-size: 0.6rem; font-weight: 600;
           padding: 2px 8px; border-radius: 4px;
         }
 
@@ -488,7 +490,7 @@ const AppointmentTable = ({ selectedDate, currentPage, onPageChange, onNextDay, 
         .at-avatar {
           width: 32px; height: 32px; border-radius: 50%; flex-shrink: 0;
           background: #e8f0ff;
-          color: #2E7DF7; font-size: 0.8rem; font-weight: 700;
+          color: #2E7DF7; font-size: 0.8rem; font-weight: 600;
           display: flex; align-items: center; justify-content: center;
         }
         /* Doctor cell */
@@ -496,7 +498,7 @@ const AppointmentTable = ({ selectedDate, currentPage, onPageChange, onNextDay, 
         .at-doctor-avatar {
           width: 28px; height: 28px; border-radius: 50%; flex-shrink: 0;
           background: #F0FDF4;
-          color: #059669; font-size: 0.72rem; font-weight: 700;
+          color: #059669; font-size: 0.72rem; font-weight: 600;
           display: flex; align-items: center; justify-content: center;
         }
         .at-patient-info { display: flex; flex-direction: column; gap: 2px; }
@@ -525,12 +527,12 @@ const AppointmentTable = ({ selectedDate, currentPage, onPageChange, onNextDay, 
           font-weight: 600; cursor: pointer; transition: all 0.15s;
           white-space: nowrap;
         }
-        .at-btn-outline { 
-          background: transparent; 
-          color: #2E7DF7; 
-          border: 1px solid #2E7DF7; 
+        .at-btn-solid { 
+          background: #2E7DF7; 
+          color: #fff; 
+          border: none; 
         }
-        .at-btn-outline:hover { background: #EEF4FF; }
+        .at-btn-solid:hover { background: #1b63cc; }
         .at-more-btn {
           width: 30px; height: 30px; border-radius: 6px;
           border: 1px solid #e0e4ec; background: #fff;
@@ -566,7 +568,7 @@ const AppointmentTable = ({ selectedDate, currentPage, onPageChange, onNextDay, 
         }
         .at-empty-title {
           font-size: 1.25rem;
-          font-weight: 700;
+          font-weight: 600;
           color: #1a1a2e;
           margin: 0 0 10px;
         }

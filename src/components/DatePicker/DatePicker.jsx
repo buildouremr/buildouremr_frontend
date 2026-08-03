@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
-import { MdCalendarToday, MdChevronLeft, MdChevronRight, MdClose } from "react-icons/md";
+import { Calendar, ChevronLeft, ChevronRight, X } from 'lucide-react';
 
 const MONTHS = [
   "January","February","March","April","May","June",
@@ -38,6 +38,8 @@ const getFirstDayOfMonth = (year, month) => new Date(year, month, 1).getDay();
  *  - id: string
  *  - minDate: string (ISO)
  *  - maxDate: string (ISO)
+ *  - customDisplay: string (optional)
+ *  - hideIcon: boolean
  */
 const DatePicker = ({
   value,
@@ -48,6 +50,8 @@ const DatePicker = ({
   minDate,
   maxDate,
   openUpward = false,
+  customDisplay,
+  hideIcon = false,
 }) => {
   const [open, setOpen] = useState(false);
   const wrapRef = useRef(null);
@@ -57,6 +61,8 @@ const DatePicker = ({
 
   const [viewYear, setViewYear] = useState((selected || today).getFullYear());
   const [viewMonth, setViewMonth] = useState((selected || today).getMonth());
+  const [mode, setMode] = useState("date"); // "date" | "month" | "year"
+  const [yearPage, setYearPage] = useState(viewYear - (viewYear % 12));
 
   // Sync view when value changes externally
   useEffect(() => {
@@ -67,9 +73,16 @@ const DatePicker = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [value]);
 
+  useEffect(() => {
+    setYearPage(viewYear - (viewYear % 12));
+  }, [viewYear]);
+
   // Close on outside click
   useEffect(() => {
-    if (!open) return;
+    if (!open) {
+      setMode("date"); // reset mode when closed
+      return;
+    }
     const handler = (e) => {
       if (wrapRef.current && !wrapRef.current.contains(e.target)) setOpen(false);
     };
@@ -77,6 +90,7 @@ const DatePicker = ({
     return () => document.removeEventListener("mousedown", handler);
   }, [open]);
 
+  // Navigation handlers
   const prevMonth = () => {
     if (viewMonth === 0) { setViewMonth(11); setViewYear((y) => y - 1); }
     else setViewMonth((m) => m - 1);
@@ -85,6 +99,10 @@ const DatePicker = ({
     if (viewMonth === 11) { setViewMonth(0); setViewYear((y) => y + 1); }
     else setViewMonth((m) => m + 1);
   };
+  const prevYear = () => setViewYear((y) => y - 1);
+  const nextYear = () => setViewYear((y) => y + 1);
+  const prevYearPage = () => setYearPage((y) => y - 12);
+  const nextYearPage = () => setYearPage((y) => y + 12);
 
   const handleDayClick = (day) => {
     const clicked = new Date(viewYear, viewMonth, day);
@@ -129,80 +147,117 @@ const DatePicker = ({
           className={`dp-trigger ${open ? "dp-trigger-open" : ""}`}
           onClick={() => setOpen((v) => !v)}
         >
-          <span className={`dp-display ${!value ? "dp-placeholder" : ""}`}>
-            {value ? formatDisplay(value) : placeholder}
+          <span className={`dp-display ${!value && !customDisplay ? "dp-placeholder" : ""}`}>
+            {customDisplay ? customDisplay : (value ? formatDisplay(value) : placeholder)}
           </span>
-          <MdCalendarToday className="dp-cal-icon" />
+          {!hideIcon && <Calendar className="dp-cal-icon" />}
         </button>
 
         {open && (
           <div className={`dp-calendar ${openUpward ? "dp-calendar-up" : "dp-calendar-down"}`}>
-            {/* Month / Year nav */}
+            {/* Nav */}
             <div className="dp-nav">
-              <button type="button" className="dp-nav-btn" onClick={prevMonth}>
-                <MdChevronLeft />
+              <button type="button" className="dp-nav-btn" onClick={() => {
+                if (mode === "date") prevMonth();
+                else if (mode === "month") prevYear();
+                else prevYearPage();
+              }}>
+                <ChevronLeft />
               </button>
               <div className="dp-month-year-selectors">
-                <select 
-                  value={viewMonth} 
-                  onChange={(e) => setViewMonth(Number(e.target.value))}
-                  className="dp-select dp-month-select"
-                >
-                  {MONTHS.map((m, idx) => <option key={m} value={idx}>{m}</option>)}
-                </select>
-                <select 
-                  value={viewYear} 
-                  onChange={(e) => setViewYear(Number(e.target.value))}
-                  className="dp-select dp-year-select"
-                >
-                  {Array.from({ length: 120 }, (_, i) => new Date().getFullYear() - 100 + i).map(y => (
-                    <option key={y} value={y}>{y}</option>
-                  ))}
-                </select>
+                {mode === "date" && (
+                  <>
+                    <button type="button" className="dp-mode-btn" onClick={() => setMode("month")}>
+                      {MONTHS[viewMonth]}
+                    </button>
+                    <button type="button" className="dp-mode-btn" onClick={() => setMode("year")}>
+                      {viewYear}
+                    </button>
+                  </>
+                )}
+                {mode === "month" && (
+                  <button type="button" className="dp-mode-btn" onClick={() => setMode("year")}>
+                    {viewYear}
+                  </button>
+                )}
+                {mode === "year" && (
+                  <span className="dp-nav-range">
+                    {yearPage} - {yearPage + 11}
+                  </span>
+                )}
               </div>
-              <button type="button" className="dp-nav-btn" onClick={nextMonth}>
-                <MdChevronRight />
+              <button type="button" className="dp-nav-btn" onClick={() => {
+                if (mode === "date") nextMonth();
+                else if (mode === "month") nextYear();
+                else nextYearPage();
+              }}>
+                <ChevronRight />
               </button>
             </div>
 
-            {/* Day names */}
-            <div className="dp-grid dp-daynames">
-              {DAYS_SHORT.map((d) => <span key={d} className="dp-dayname">{d}</span>)}
-            </div>
+            {/* Content Grids */}
+            {mode === "date" && (
+              <>
+                <div className="dp-grid dp-daynames">
+                  {DAYS_SHORT.map((d) => <span key={d} className="dp-dayname">{d}</span>)}
+                </div>
+                <div className="dp-grid dp-days">
+                  {cells.map((day, idx) =>
+                    day === null ? (
+                      <span key={`e-${idx}`} />
+                    ) : (
+                      <button
+                        key={day}
+                        type="button"
+                        className={`dp-day
+                          ${isSelected(day) ? "dp-day-selected" : ""}
+                          ${isToday(day) && !isSelected(day) ? "dp-day-today" : ""}
+                          ${isDisabled(day) ? "dp-day-disabled" : ""}
+                        `}
+                        onClick={() => handleDayClick(day)}
+                        disabled={isDisabled(day)}
+                      >
+                        {day}
+                      </button>
+                    )
+                  )}
+                </div>
+              </>
+            )}
 
-            {/* Day cells */}
-            <div className="dp-grid dp-days">
-              {cells.map((day, idx) =>
-                day === null ? (
-                  <span key={`e-${idx}`} />
-                ) : (
+            {mode === "month" && (
+              <div className="dp-grid-months">
+                {MONTHS.map((m, idx) => (
                   <button
-                    key={day}
+                    key={m}
                     type="button"
-                    className={`dp-day
-                      ${isSelected(day) ? "dp-day-selected" : ""}
-                      ${isToday(day) && !isSelected(day) ? "dp-day-today" : ""}
-                      ${isDisabled(day) ? "dp-day-disabled" : ""}
-                    `}
-                    onClick={() => handleDayClick(day)}
-                    disabled={isDisabled(day)}
+                    className={`dp-month-btn ${idx === viewMonth && viewYear === (selected ? selected.getFullYear() : today.getFullYear()) ? "dp-month-selected" : ""}`}
+                    onClick={() => {
+                      setViewMonth(idx);
+                      setMode("date");
+                    }}
                   >
-                    {day}
+                    {m.substring(0, 3)}
                   </button>
-                )
-              )}
-            </div>
+                ))}
+              </div>
+            )}
 
-            {/* Clear */}
-            {value && (
-              <div className="dp-footer">
-                <button
-                  type="button"
-                  className="dp-clear"
-                  onClick={() => { onChange(""); setOpen(false); }}
-                >
-                  <MdClose style={{ fontSize: "0.85rem" }} /> Clear
-                </button>
+            {mode === "year" && (
+              <div className="dp-grid-years">
+                {Array.from({length: 12}, (_, i) => yearPage + i).map(y => (
+                  <button
+                    key={y}
+                    type="button"
+                    className={`dp-year-btn ${y === viewYear ? "dp-year-selected" : ""}`}
+                    onClick={() => {
+                      setViewYear(y);
+                      setMode("month");
+                    }}
+                  >
+                    {y}
+                  </button>
+                ))}
               </div>
             )}
           </div>
@@ -282,26 +337,21 @@ const DatePicker = ({
           transition: all 0.15s;
         }
         .dp-nav-btn:hover { background: #f0f4ff; color: #2E7DF7; border-color: #93c5fd; }
+        
         .dp-month-year-selectors {
           display: flex;
           align-items: center;
           gap: 4px;
         }
-        .dp-select {
-          border: 1px solid transparent;
-          background: transparent;
-          font-size: 0.9rem;
-          font-weight: 700;
-          color: #1a1a2e;
-          cursor: pointer;
-          padding: 2px 4px;
-          border-radius: 4px;
-          outline: none;
+        
+        .dp-mode-btn {
+          border: none; background: transparent;
+          font-size: 0.95rem; font-weight: 600; color: #1a1a2e;
+          cursor: pointer; padding: 4px 8px; border-radius: 6px;
+          transition: background 0.15s;
         }
-        .dp-select:hover {
-          background: #f0f4ff;
-          border-color: #d1d5db;
-        }
+        .dp-mode-btn:hover { background: #f0f4ff; color: #2E7DF7; }
+        .dp-nav-range { font-size: 0.95rem; font-weight: 600; color: #1a1a2e; padding: 4px 8px; }
 
         .dp-grid {
           display: grid;
@@ -334,38 +384,30 @@ const DatePicker = ({
         .dp-day:hover:not(:disabled) { background: #f0f4ff; color: #2E7DF7; }
         .dp-day-today {
           color: #2E7DF7;
-          font-weight: 700;
+          font-weight: 600;
           border: 1.5px solid #2E7DF7;
         }
         .dp-day-selected {
           background: #2E7DF7 !important;
           color: #fff !important;
-          font-weight: 700;
+          font-weight: 600;
         }
         .dp-day-disabled { color: #d1d5db; cursor: not-allowed; }
 
-        .dp-footer {
-          border-top: 1px solid #f0f2f5;
+        .dp-grid-months, .dp-grid-years {
+          display: grid;
+          grid-template-columns: repeat(3, 1fr);
+          gap: 8px;
           margin-top: 10px;
-          padding-top: 10px;
-          display: flex;
-          justify-content: flex-end;
         }
-        .dp-clear {
-          display: flex;
-          align-items: center;
-          gap: 4px;
-          background: none;
-          border: none;
-          font-size: 0.78rem;
-          color: #6b7280;
-          cursor: pointer;
-          padding: 4px 8px;
-          border-radius: 4px;
-          font-weight: 500;
-          transition: all 0.15s;
+        .dp-month-btn, .dp-year-btn {
+          padding: 12px 0;
+          border: none; background: #f9fafb; border-radius: 6px;
+          font-size: 0.85rem; font-weight: 500; color: #374151;
+          cursor: pointer; transition: all 0.15s;
         }
-        .dp-clear:hover { color: #E74C3C; background: #fff0f0; }
+        .dp-month-btn:hover, .dp-year-btn:hover { background: #f0f4ff; color: #2E7DF7; }
+        .dp-month-selected, .dp-year-selected { background: #2E7DF7 !important; color: #fff !important; font-weight: 600; }
       `}</style>
     </>
   );

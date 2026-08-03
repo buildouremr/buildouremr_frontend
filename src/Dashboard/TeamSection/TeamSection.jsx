@@ -1,5 +1,5 @@
 import useTeamSection from "./useTeamSection";
-import { MdChat } from "react-icons/md";
+import { MessageSquare } from 'lucide-react';
 
 // Show initials when no avatar image is provided
 const AvatarFallback = ({ name }) => {
@@ -61,7 +61,7 @@ const TeamSection = () => {
           </div>
         </div>
         <button className="ts-chat-btn" onClick={() => handleChat(member.id)}>
-          <MdChat style={{ fontSize: "1.1rem" }} />
+          <MessageSquare style={{ fontSize: "1.1rem" }} />
         </button>
       </div>
     ));

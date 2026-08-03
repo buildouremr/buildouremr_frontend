@@ -1,8 +1,4 @@
-import {
-  MdPhone, MdEmail, MdLocationOn,
-  MdCalendarMonth, MdAccessTime,
-} from "react-icons/md";
-import { BsListNested } from "react-icons/bs";
+import { Phone, Mail, MapPin, Calendar, Clock, List } from 'lucide-react';
 
 // API response keys from getAppointmentPatientDetails:
 // patientName, gender, patientId, emailId, mobileNo, dob,
@@ -108,31 +104,31 @@ const PatientDetailPanel = ({ patient, loading, onClose }) => {
 
               {/* mobileNo */}
               <div className="pdp-detail-row">
-                <MdPhone className="pdp-detail-icon" />
+                <Phone className="pdp-detail-icon" />
                 <span className="pdp-detail-val">{patient.mobileNo || "—"}</span>
                 <ActionIcon color="#2E7DF7" bg="#EEF4FF">
-                  <MdPhone style={{ fontSize: "0.85rem" }} />
+                  <Phone style={{ fontSize: "0.85rem" }} />
                 </ActionIcon>
               </div>
 
               {/* emailId */}
               <div className="pdp-detail-row">
-                <MdEmail className="pdp-detail-icon" />
+                <Mail className="pdp-detail-icon" />
                 <span className="pdp-detail-val">{patient.emailId || "—"}</span>
                 <ActionIcon color="#2E7DF7" bg="#EEF4FF">
-                  <MdEmail style={{ fontSize: "0.85rem" }} />
+                  <Mail style={{ fontSize: "0.85rem" }} />
                 </ActionIcon>
               </div>
 
               {/* dob */}
               <div className="pdp-detail-row">
-                <MdCalendarMonth className="pdp-detail-icon" />
+                <Calendar className="pdp-detail-icon" />
                 <span className="pdp-detail-val">{formatDob(patient.dob)}</span>
               </div>
 
               {/* stateAndCity */}
               <div className="pdp-detail-row">
-                <MdLocationOn className="pdp-detail-icon" />
+                <MapPin className="pdp-detail-icon" />
                 <span className="pdp-detail-val">{patient.stateAndCity || "—"}</span>
               </div>
             </div>
@@ -145,13 +141,13 @@ const PatientDetailPanel = ({ patient, loading, onClose }) => {
 
               {/* apptDate */}
               <div className="pdp-detail-row">
-                <MdCalendarMonth className="pdp-detail-icon" />
+                <Calendar className="pdp-detail-icon" />
                 <span className="pdp-detail-val">{formatDate(patient.apptDate)}</span>
               </div>
 
               {/* apptStartTime – apptEndTime */}
               <div className="pdp-detail-row">
-                <MdAccessTime className="pdp-detail-icon" />
+                <Clock className="pdp-detail-icon" />
                 <span className="pdp-detail-val">
                   {patient.apptStartTime || "—"}
                   {patient.apptEndTime ? ` - ${patient.apptEndTime}` : ""}
@@ -160,7 +156,7 @@ const PatientDetailPanel = ({ patient, loading, onClose }) => {
 
               {/* apptSessionType */}
               <div className="pdp-detail-row">
-                <BsListNested className="pdp-detail-icon" />
+                <List className="pdp-detail-icon" />
                 <span
                   className="pdp-type-chip"
                   style={{ color: typeColor, background: typeBg }}

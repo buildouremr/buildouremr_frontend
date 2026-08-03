@@ -1,6 +1,5 @@
 import React from "react";
-import { MdClose } from "react-icons/md";
-import { FaRegSave, FaRegTrashAlt } from "react-icons/fa";
+import { X, Save, Trash2 } from 'lucide-react';
 
 /**
  * Reusable Confirm Modal
@@ -34,12 +33,12 @@ const ConfirmModal = ({
         <div className="cm-modal" onClick={(e) => e.stopPropagation()}>
           {/* Close button */}
           <button className="cm-close" onClick={onCancel}>
-            <MdClose />
+            <X />
           </button>
 
           {/* Icon */}
           <div className={`cm-icon-wrap ${isDelete ? "cm-icon-delete" : "cm-icon-save"}`}>
-            {isDelete ? <FaRegTrashAlt /> : <FaRegSave />}
+            {isDelete ? <Trash2 /> : <Save />}
           </div>
 
           {/* Text */}

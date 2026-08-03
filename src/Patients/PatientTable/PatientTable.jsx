@@ -1,8 +1,9 @@
 import usePatientTable from "./usePatientTable";
 import { useState, useRef, useCallback } from "react";
-import { MdMoreVert, MdSearch, MdOutlineEmail, MdOutlinePhone } from "react-icons/md";
+
 import Pagination from "../../components/Pagination/Pagination";
 import FilterDropdown from "../../components/Dropdown/FilterDropdown";
+import { MoreVertical, Search, Mail, Phone } from 'lucide-react';
 
 // Height of a single data row (must match .pt-table td height in CSS below)
 const ROW_HEIGHT = 65;
@@ -34,7 +35,7 @@ const calculateAge = (dobString) => {
   if (!dobString) return "--";
   const dob = new Date(dobString);
   const diff = Date.now() - dob.getTime();
-  const ageDate = new Date(diff); 
+  const ageDate = new Date(diff);
   return Math.abs(ageDate.getUTCFullYear() - 1970);
 };
 
@@ -44,14 +45,14 @@ const formatPatientId = (id) => {
 
 const getChronicBadgeStyle = (diseaseName) => {
   if (!diseaseName) return { color: '#6b7280', background: '#f0f2f5' };
-  
+
   const nameLower = diseaseName.toLowerCase();
   if (nameLower.includes('diabetes')) return { color: '#E74C3C', background: '#FFE8E8' };
   if (nameLower.includes('thyroid') || nameLower.includes('hypothyroidism')) return { color: '#ef4444', background: '#fef2f2' };
   if (nameLower.includes('hypercholesterolemia') || nameLower.includes('hyperlipidemia')) return { color: '#8b5cf6', background: '#f3e8ff' };
   if (nameLower.includes('asthma') || nameLower.includes('pulmonary')) return { color: '#0ea5e9', background: '#e0f2fe' };
   if (nameLower.includes('hypertension')) return { color: '#f59e0b', background: '#fef3c7' };
-  
+
   // Default fallback for other diseases
   return { color: '#0D9B5C', background: '#E8F8F0' };
 };
@@ -91,7 +92,7 @@ const PatientTable = ({ refreshTrigger }) => {
   return (
     <>
       <div className="pt-wrapper">
-        
+
         {/* Tabs Container */}
         <div className="pt-tabs-container">
           <div className="pt-tabs">
@@ -114,7 +115,7 @@ const PatientTable = ({ refreshTrigger }) => {
               <span className="pt-queue-title">In Patients Queue</span>
               <div className="pt-queue-actions">
                 <div className="pt-filter-wrap">
-                  <FilterDropdown 
+                  <FilterDropdown
                     options={chronicDiseases}
                     selectedValues={selectedDiseases}
                     onChange={setSelectedDiseases}
@@ -129,7 +130,7 @@ const PatientTable = ({ refreshTrigger }) => {
                     value={searchQuery}
                     onChange={(e) => handleSearchChange(e.target.value)}
                   />
-                  <MdSearch className="pt-search-icon" />
+                  <Search className="pt-search-icon" />
                 </div>
               </div>
             </div>
@@ -195,7 +196,7 @@ const PatientTable = ({ refreshTrigger }) => {
                       const city = patient.patientRegistrationCity || '--';
                       const isChronic = patient.patientRegistrationChronic;
                       const isActive = patient.patientRegistrationActive;
-                      
+
                       return (
                         <tr key={patient.patientRegistrationId ?? i} className="pt-row">
                           <td>
@@ -238,9 +239,9 @@ const PatientTable = ({ refreshTrigger }) => {
                           </td>
                           <td>
                             <div className="pt-actions-cell">
-                              <button className="pt-action-btn"><MdOutlineEmail /></button>
-                              <button className="pt-action-btn"><MdOutlinePhone /></button>
-                              <button className="pt-action-btn"><MdMoreVert /></button>
+                              <button className="pt-action-btn"><Mail /></button>
+                              <button className="pt-action-btn"><Phone /></button>
+                              <button className="pt-action-btn"><MoreVertical /></button>
                             </div>
                           </td>
                         </tr>
@@ -341,7 +342,7 @@ const PatientTable = ({ refreshTrigger }) => {
         }
         .pt-queue-title {
           font-size: 1.1rem;
-          font-weight: 700;
+          font-weight: 600;
           color: #1a1a2e;
         }
         .pt-queue-actions {
@@ -388,8 +389,8 @@ const PatientTable = ({ refreshTrigger }) => {
         .pt-table th {
           padding: 12px 16px;
           text-align: left;
-          font-weight: 700;
-          font-size: 0.82rem;
+          font-weight: 600;
+          font-size: 14px;
           color: #4b5563;
           white-space: nowrap;
         }
@@ -416,11 +417,11 @@ const PatientTable = ({ refreshTrigger }) => {
         .pt-patient-cell { display: flex; align-items: center; gap: 12px; }
         .pt-avatar {
           width: 36px; height: 36px; border-radius: 50%; flex-shrink: 0;
-          background: #e8f0ff; color: #2E7DF7; font-size: 0.9rem; font-weight: 700;
+          background: #e8f0ff; color: #2E7DF7; font-size: 0.9rem; font-weight: 600;
           display: flex; align-items: center; justify-content: center;
         }
         .pt-patient-info { display: flex; flex-direction: column; gap: 3px; }
-        .pt-patient-name { font-weight: 700; color: #1a1a2e; white-space: nowrap; font-size: 0.9rem; }
+        .pt-patient-name { font-weight: 600; color: #1a1a2e; white-space: nowrap; font-size: 0.9rem; }
         .pt-patient-meta { font-size: 0.75rem; color: #9ca3af; white-space: nowrap; font-weight: 500; }
 
         .pt-chronic-badge {
@@ -434,18 +435,18 @@ const PatientTable = ({ refreshTrigger }) => {
 
         .pt-avatar-doctor {
           width: 30px; height: 30px; border-radius: 50%; flex-shrink: 0;
-          background: #e8f8f0; color: #0D9B5C; font-size: 0.75rem; font-weight: 700;
+          background: #e8f8f0; color: #0D9B5C; font-size: 0.75rem; font-weight: 600;
           display: flex; align-items: center; justify-content: center;
         }
         .pt-doctor-name { font-weight: 600; color: #1a1a2e; font-size: 0.85rem; }
 
         .pt-contact-info { display: flex; flex-direction: column; gap: 3px; }
-        .pt-contact-phone { font-weight: 500; color: #4b5563; font-size: 0.82rem; }
-        .pt-contact-email { font-size: 0.75rem; color: #9ca3af; }
+        .pt-contact-phone { font-weight: 500; color: #4b5563; font-size: 0.82rem; white-space: nowrap; }
+        .pt-contact-email { font-size: 0.75rem; color: #9ca3af; white-space: nowrap; }
 
         .pt-status-badge {
           display: inline-block; padding: 4px 12px;
-          border-radius: 6px; font-size: 0.75rem; font-weight: 700;
+          border-radius: 6px; font-size: 0.75rem; font-weight: 600;
         }
 
         .pt-actions-cell { display: flex; align-items: center; gap: 8px; white-space: nowrap; }
@@ -461,7 +462,7 @@ const PatientTable = ({ refreshTrigger }) => {
           display: flex; align-items: center; justify-content: center;
           padding: 60px 24px; text-align: center;
         }
-        .pt-empty-title { font-size: 1.25rem; font-weight: 700; color: #1a1a2e; }
+        .pt-empty-title { font-size: 1.25rem; font-weight: 600; color: #1a1a2e; }
 
         .pt-error-state {
           display: flex; align-items: center; justify-content: center;

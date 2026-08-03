@@ -1,7 +1,6 @@
 import React, { useRef, useEffect } from 'react';
 import useForgotPassword from './useForgotPassword';
-import { MdOutlineMailOutline, MdErrorOutline } from 'react-icons/md';
-import { IoArrowBack } from 'react-icons/io5';
+import { Mail, AlertCircle, ArrowLeft } from 'lucide-react';
 
 const ForgotPassword = ({ onBack }) => {
 
@@ -85,7 +84,7 @@ const ForgotPassword = ({ onBack }) => {
                     {step === 1 && (
                         <>
                             <div style={styles.titleRow}>
-                                <IoArrowBack onClick={onBack} style={styles.backIcon} />
+                                <ArrowLeft onClick={onBack} style={styles.backIcon} />
                                 <div>
                                     <h2 style={styles.title}>OTP Verification</h2>
                                     <p style={styles.subtitle}>
@@ -96,13 +95,13 @@ const ForgotPassword = ({ onBack }) => {
 
                             {error && (
                                 <div style={styles.errorBox}>
-                                    <MdErrorOutline style={styles.errorIcon} />
+                                    <AlertCircle style={styles.errorIcon} />
                                     <span>{error}</span>
                                 </div>
                             )}
 
                             <div style={styles.inputGroup}>
-                                <MdOutlineMailOutline style={styles.inputIcon} />
+                                <Mail style={styles.inputIcon} />
                                 <input
                                     type="email"
                                     placeholder="Email Address"
@@ -188,7 +187,7 @@ const ForgotPassword = ({ onBack }) => {
                             {/* Error banner (below button, matches design) */}
                             {error && (
                                 <div style={{ ...styles.errorBox, marginTop: '16px' }}>
-                                    <MdErrorOutline style={styles.errorIcon} />
+                                    <AlertCircle style={styles.errorIcon} />
                                     <span>{error}</span>
                                 </div>
                             )}
@@ -205,7 +204,7 @@ const ForgotPassword = ({ onBack }) => {
 
                             {error && (
                                 <div style={styles.errorBox}>
-                                    <MdErrorOutline style={styles.errorIcon} />
+                                    <AlertCircle style={styles.errorIcon} />
                                     <span>{error}</span>
                                 </div>
                             )}
