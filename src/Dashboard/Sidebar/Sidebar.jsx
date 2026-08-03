@@ -1,6 +1,6 @@
 import { useState } from "react";
 import useSidebar from "./useSidebar";
-import { LayoutDashboard, Calendar, Users, Stethoscope, TestTube, Pill, Settings, FileText, Activity, Layers, Plus, ChevronRight, Leaf, ArrowLeftFromLine, ArrowRightFromLine } from 'lucide-react';
+import { LayoutDashboard, Calendar, Users, Stethoscope, TestTube, Pill, Settings, FileText, Activity, Layers, ChevronRight, Leaf, ArrowLeftFromLine, ArrowRightFromLine } from 'lucide-react';
 
 const iconMap = {
   dashboard: LayoutDashboard, calendar: Calendar, people: Users,
@@ -17,7 +17,7 @@ const Sidebar = ({ activeMenu: propActiveMenu, onMenuChange, summaryData }) => {
 
   return (
     <div className="sb-wrapper" style={{ width: isPinned ? 240 : 80, minWidth: isPinned ? 240 : 80, transition: 'width 0.3s ease', position: 'relative' }}>
-      <div 
+      <div
         className={`sb-sidebar ${isExpanded ? "expanded" : "collapsed"} ${isPinned ? "pinned" : ""}`}
         onMouseEnter={() => !isPinned && setIsHovered(true)}
         onMouseLeave={() => !isPinned && setIsHovered(false)}
@@ -27,14 +27,13 @@ const Sidebar = ({ activeMenu: propActiveMenu, onMenuChange, summaryData }) => {
             <div className="sb-logo-left">
               <Leaf className="sb-logo-icon" />
               {isExpanded && <span className="sb-logo-text">Dreams EMR</span>}
-              {isExpanded && <span className="sb-logo-badge">E</span>}
             </div>
             {isExpanded && (
-              <button 
-                className="sb-toggle-btn" 
+              <button
+                className="sb-toggle-btn"
                 onClick={() => { setIsPinned(!isPinned); setIsHovered(false); }}
               >
-                {isPinned ? <ArrowLeftFromLine size={16}/> : <ArrowRightFromLine size={16}/>}
+                {isPinned ? <ArrowLeftFromLine size={16} /> : <ArrowRightFromLine size={16} />}
               </button>
             )}
           </div>
@@ -81,14 +80,14 @@ const Sidebar = ({ activeMenu: propActiveMenu, onMenuChange, summaryData }) => {
             })}
           </div>
         </div>
-        {isExpanded && (
+        {/* {isExpanded && (
           <div className="sb-bottom-card">
             <div className="sb-card-emoji">&#9733;</div>
             <p className="sb-card-title">Let's start!</p>
             <p className="sb-card-desc">Creating or adding new tasks couldn't be easier</p>
             <button className="sb-card-btn"><Plus className="sb-btn-icon" /> Add New Task</button>
           </div>
-        )}
+        )} */}
       </div>
 
       <style>{`

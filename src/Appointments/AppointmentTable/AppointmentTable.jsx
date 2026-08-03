@@ -35,13 +35,6 @@ const SkeletonRow = () => (
   </tr>
 );
 
-/** Fixed-height empty rows so the table always spans 10 rows */
-const EmptyRow = () => (
-  <tr className="at-empty-filler-row">
-    <td colSpan={5}>&nbsp;</td>
-  </tr>
-);
-
 const AppointmentTable = ({ selectedDate, currentPage, onPageChange, onNextDay, externalActiveTab, refreshKey }) => {
   // ── Dynamic row count based on container height ──────────────────────
   const observerRef = useRef(null);
@@ -78,10 +71,6 @@ const AppointmentTable = ({ selectedDate, currentPage, onPageChange, onNextDay, 
     if (refreshKey && refreshKey > 0) fetchAppointments();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [refreshKey]);
-
-  const emptyRowCount = loading || error || pageAppointments.length === 0
-    ? 0
-    : Math.max(0, rowsPerPage - pageAppointments.length);
 
   const hasAppointments = !loading && !error && pageAppointments.length > 0;
 
@@ -154,25 +143,21 @@ const AppointmentTable = ({ selectedDate, currentPage, onPageChange, onNextDay, 
             ) : pageAppointments.length === 0 ? (
               <div className="at-table-fixed at-empty-state">
                 <h3 className="at-empty-title">
-                  {activeTab === "Pending" ? "You’re all caught up!" :
+                  {activeTab === "Pending" ? "You're all caught up!" :
                     activeTab === "Completed" ? "Ready for your first patient today" :
                       activeTab === "Cancelled" ? "No cancellations today" :
                         activeTab === "No Show" ? "Perfect attendance today!" :
-                          "You’re all caught up!"}
+                          "You're all caught up!"}
                 </h3>
                 <p className="at-empty-subtitle">
                   {activeTab === "Pending" ? "No patients are waiting at the moment. Great job keeping up with your schedule." :
-                    activeTab === "Completed" ? (
-                      <>Once you complete an active appointment from your queue, the consultation<br />summary details will appear here.</>
-                    ) :
+                    activeTab === "Completed" ? "Once you complete an active appointment from your queue, the consultation summary details will appear here." :
                       activeTab === "Cancelled" ? "All scheduled appointments are currently active in your queue." :
-                        activeTab === "No Show" ? (
-                          <>very scheduled patient has successfully attended their session or cancelled<br />ahead of time. No missed appointments recorded.</>
-                        ) :
+                        activeTab === "No Show" ? "Every scheduled patient has successfully attended their session or cancelled ahead of time. No missed appointments recorded." :
                           "No patients are waiting at the moment. Great job keeping up with your schedule."}
                 </p>
                 <button
-                  className={activeTab === "Pending" || activeTab === "All Appointments" ? "at-empty-btn" : "at-empty-btn-filled"}
+                  className="at-empty-btn"
                   onClick={() => {
                     if (activeTab === "Pending" || activeTab === "All Appointments") {
                       if (onNextDay) onNextDay();
@@ -547,58 +532,36 @@ const AppointmentTable = ({ selectedDate, currentPage, onPageChange, onNextDay, 
           flex-direction: column;
           align-items: center;
           justify-content: center;
-          padding: 60px 24px 48px;
-          flex: 1;
           text-align: center;
-        }
-        .at-empty-icon-wrap {
-          width: 68px;
-          height: 68px;
-          border-radius: 50%;
-          background: linear-gradient(135deg, #34d399, #10b981);
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          margin-bottom: 20px;
-          box-shadow: 0 8px 24px rgba(16, 185, 129, 0.25);
-        }
-        .at-empty-icon {
-          color: #fff;
-          font-size: 2rem;
+          padding: 40px 14px;
+          flex: 1;
         }
         .at-empty-title {
-          font-size: 1.25rem;
-          font-weight: 600;
+          font-size: 1.5rem;
           color: #1a1a2e;
-          margin: 0 0 10px;
+          font-weight: 600;
+          margin: 0 0 10px 0;
         }
         .at-empty-subtitle {
-          font-size: 0.85rem;
-          color: #6b7280;
-          max-width: 400px;
-          line-height: 1.6;
-          margin: 0 0 28px;
+          color: #9ca3af;
+          font-size: 1rem;
+          font-weight: 400;
+          margin: 0 0 20px 0;
         }
         .at-empty-btn {
           display: inline-flex;
           align-items: center;
           gap: 8px;
-          padding: 10px 24px;
-          border: 1.5px solid #2E7DF7;
-          border-radius: 8px;
-          background: transparent;
-          color: #2E7DF7;
-          font-size: 0.85rem;
-          font-weight: 600;
-          cursor: pointer;
-          transition: all 0.18s;
-        }
-        .at-empty-btn:hover {
           background: #2E7DF7;
           color: #fff;
+          border: none;
+          padding: 10px 20px;
+          border-radius: 8px;
+          font-weight: 600;
+          cursor: pointer;
+          transition: background 0.2s;
         }
-
-        /* ── Error state ── */
+        .at-empty-btn:hover { background: #2264cc; }
         .at-error-state {
           display: flex;
           align-items: center;
@@ -621,25 +584,6 @@ const AppointmentTable = ({ selectedDate, currentPage, onPageChange, onNextDay, 
         }
         .at-skeleton-row td { padding: 18px 16px; }
         .at-skeleton-row:last-child td { border-bottom: none; }
-
-        .at-empty-btn-filled {
-          display: inline-flex;
-          align-items: center;
-          gap: 8px;
-          padding: 10px 24px;
-          border: 1.5px solid #2E7DF7;
-          border-radius: 8px;
-          background: #2E7DF7;
-          color: #fff;
-          font-size: 0.85rem;
-          font-weight: 600;
-          cursor: pointer;
-          transition: all 0.18s;
-        }
-        .at-empty-btn-filled:hover {
-          background: #1b63cc;
-          border-color: #1b63cc;
-        }
       `}</style>
     </>
   );

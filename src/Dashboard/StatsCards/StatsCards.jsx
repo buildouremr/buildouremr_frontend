@@ -33,7 +33,7 @@ const StatsCards = ({ summaryData, summaryLoading, onCardClick }) => {
                 <p className="sc-title">{stat.title}</p>
                 <div className="sc-value-row">
                   <span className="sc-value">{stat.value}</span>
-                  <span className="sc-change" style={{ color: "#28a745" }}>
+                  <span className="sc-change" style={{ color: stat.change === "0%" ? "#9ca3af" : (stat.change.startsWith("+") ? "#10b981" : "#E74C3C") }}>
                     {stat.change}
                   </span>
                 </div>

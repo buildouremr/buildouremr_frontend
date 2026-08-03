@@ -3,14 +3,21 @@ const useStatsCards = (summaryData) => {
   const pending = summaryData?.pendingCount || 0;
   const cancelled = summaryData?.cancelledCount || 0;
 
-  const pendingPercent = total > 0 ? Math.round((pending / total) * 100) : 0;
-  const cancelledPercent = total > 0 ? Math.round((cancelled / total) * 100) : 0;
+  const getPosPercent = (val) => {
+    if (total === 0 || val === 0) return "0%";
+    return "+" + Math.round((val / total) * 100) + "%";
+  };
+
+  const getNegPercent = (val) => {
+    if (total === 0 || val === 0) return "0%";
+    return "-" + Math.round((val / total) * 100) + "%";
+  };
 
   const data = {
     stats: [
       {
         title: "Total Appointments",
-        value: summaryData?.totalAppointments ?? 0,
+        value: total,
         change: total > 0 ? "+100%" : "0%",
         color: "#2E7DF7",
         bgColor: "#E8F0FF",
@@ -18,16 +25,16 @@ const useStatsCards = (summaryData) => {
       },
       {
         title: "Pending Patients",
-        value: summaryData?.pendingCount ?? 0,
-        change: total > 0 ? `+${pendingPercent}%` : "0%",
+        value: pending,
+        change: getPosPercent(pending),
         color: "#FF6B35",
         bgColor: "#FFF0E8",
         iconType: "pending",
       },
       {
         title: "Cancelled Appointments",
-        value: summaryData?.cancelledCount ?? 0,
-        change: total > 0 ? `-${cancelledPercent}%` : "0%",
+        value: cancelled,
+        change: getNegPercent(cancelled),
         color: "#E74C3C",
         bgColor: "#FFE8E8",
         iconType: "cancelled",

@@ -197,6 +197,19 @@ const useNewPatientModal = ({ onClose, onSuccess, onError }) => {
       setError("Gender is required.");
       return false;
     }
+    
+    // If a doctor is selected, date and time must also be selected
+    if (formData.doctorId) {
+      if (!formData.appointmentDate) {
+        setError("Appointment Date is required if a Doctor is selected.");
+        return false;
+      }
+      if (!formData.appointmentTime) {
+        setError("Appointment Time is required if a Doctor is selected.");
+        return false;
+      }
+    }
+    
     return true;
   };
 
@@ -206,7 +219,7 @@ const useNewPatientModal = ({ onClose, onSuccess, onError }) => {
     const payload = {
       patientFirstName: formData.firstName,
       patientLastName: formData.lastName,
-      patientMobileNumber: formData.phoneNumber,
+      patientMobileNumber: formData.phoneNumber.replace(/\D/g, ""),
       patientEmailId: formData.email,
       dateOfBirth: formData.dateOfBirth,
       gender: formData.gender,

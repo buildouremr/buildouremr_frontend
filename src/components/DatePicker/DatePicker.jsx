@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
-import { Calendar, ChevronLeft, ChevronRight, X } from 'lucide-react';
+import { Calendar, ChevronLeft, ChevronRight } from 'lucide-react';
 
 const MONTHS = [
   "January","February","March","April","May","June",

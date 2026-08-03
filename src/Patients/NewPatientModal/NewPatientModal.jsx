@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 
 import DatePicker from "../../components/DatePicker/DatePicker";
 import Dropdown from "../../components/Dropdown/Dropdown";
@@ -121,6 +121,16 @@ const NewPatientModal = ({ onClose, onSuccess, onError }) => {
       onClose();
     }
   };
+
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === "Escape") {
+        handleAttemptClose();
+      }
+    };
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [hasUnsavedChanges, onClose]);
 
   const handleNameChange = (field, value) => {
     handleSearchByName(field, value);
@@ -262,13 +272,24 @@ const NewPatientModal = ({ onClose, onSuccess, onError }) => {
                   <label><Phone /> Phone Number</label>
                   <input
                     type="text"
-                    placeholder="(+91) 98876xxxxx"
+                    placeholder="909-090-9090"
                     value={formData.phoneNumber}
-                    onChange={(e) => handleChange("phoneNumber", e.target.value)}
+                    onChange={(e) => {
+                      const val = e.target.value.replace(/\D/g, "");
+                      const limited = val.substring(0, 10);
+                      let formatted = limited;
+                      if (limited.length > 3 && limited.length <= 6) {
+                        formatted = `${limited.substring(0,3)}-${limited.substring(3)}`;
+                      } else if (limited.length > 6) {
+                        formatted = `${limited.substring(0,3)}-${limited.substring(3,6)}-${limited.substring(6)}`;
+                      }
+                      handleChange("phoneNumber", formatted);
+                    }}
+                    maxLength="12"
                   />
                 </div>
                 <div className="npm-field">
-                  <label><Mail /> Email id</label>
+                  <label><Mail /> Email Id</label>
                   <input
                     type="email"
                     placeholder="Name@gmail.com"

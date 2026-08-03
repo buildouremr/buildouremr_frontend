@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useMemo } from "react";
 import { ChevronDown, Check } from 'lucide-react';
 
 /**
@@ -13,31 +13,93 @@ import { ChevronDown, Check } from 'lucide-react';
  */
 const Dropdown = ({ options = [], value, onChange, placeholder = "Select...", id, className, disabled }) => {
   const [open, setOpen] = useState(false);
+  const [focusedIndex, setFocusedIndex] = useState(-1);
   const wrapRef = useRef(null);
 
-  // Normalise options to { value, label }
-  const normalised = options.map((o) =>
-    typeof o === "string" ? { value: o, label: o } : o
-  );
+  const normalised = useMemo(() => {
+    return options.map((o) => (typeof o === "string" ? { value: o, label: o } : o));
+  }, [options]);
 
   const selected = normalised.find((o) => String(o.value) === String(value));
 
   useEffect(() => {
+    if (open && focusedIndex >= 0 && wrapRef.current) {
+      const options = wrapRef.current.querySelectorAll(".dd-option");
+      if (options[focusedIndex]) {
+        options[focusedIndex].scrollIntoView({ block: "nearest" });
+      }
+    }
+  }, [focusedIndex, open]);
+
+  useEffect(() => {
     if (!open) return;
     const handler = (e) => {
-      if (wrapRef.current && !wrapRef.current.contains(e.target)) setOpen(false);
+      if (wrapRef.current && !wrapRef.current.contains(e.target)) {
+        setOpen(false);
+        setFocusedIndex(-1);
+      }
     };
     document.addEventListener("mousedown", handler);
     return () => document.removeEventListener("mousedown", handler);
   }, [open]);
 
+  const handleKeyDown = (e) => {
+    if (!open) {
+      if (e.key === "Enter" || e.key === "ArrowDown" || e.key === " ") {
+        e.preventDefault();
+        if (!disabled) {
+          setOpen(true);
+          setFocusedIndex(0);
+        }
+      }
+      return;
+    }
+
+    if (e.key === "Escape") {
+      e.preventDefault();
+      setOpen(false);
+      setFocusedIndex(-1);
+      return;
+    }
+
+    if (e.key === "ArrowDown") {
+      e.preventDefault();
+      setFocusedIndex((prev) => (prev + 1) % normalised.length);
+    } else if (e.key === "ArrowUp") {
+      e.preventDefault();
+      setFocusedIndex((prev) => (prev - 1 + normalised.length) % normalised.length);
+    } else if (e.key === "Enter") {
+      e.preventDefault();
+      e.stopPropagation();
+      if (focusedIndex >= 0 && focusedIndex < normalised.length) {
+        onChange(normalised[focusedIndex].value);
+        setOpen(false);
+        setFocusedIndex(-1);
+        wrapRef.current?.querySelector(".dd-trigger")?.blur();
+      } else {
+        setOpen(false);
+        setFocusedIndex(-1);
+      }
+    }
+  };
+
   return (
     <>
-      <div className={`dd-wrap${className ? " " + className : ""}`} ref={wrapRef} id={id}>
+      <div 
+        className={`dd-wrap${className ? " " + className : ""}`} 
+        ref={wrapRef} 
+        id={id}
+        onKeyDown={handleKeyDown}
+      >
         <button
           type="button"
           className={`dd-trigger ${open ? "dd-trigger-open" : ""} ${disabled ? "dd-trigger-disabled" : ""}`}
-          onClick={() => !disabled && setOpen((v) => !v)}
+          onClick={() => {
+            if (!disabled) {
+              setOpen((v) => !v);
+              setFocusedIndex(-1);
+            }
+          }}
           disabled={disabled}
         >
           <span className={selected ? "dd-value" : "dd-placeholder"}>
@@ -51,14 +113,16 @@ const Dropdown = ({ options = [], value, onChange, placeholder = "Select...", id
 
         {open && (
           <div className="dd-menu">
-            {normalised.map((opt) => {
+            {normalised.map((opt, i) => {
               const isActive = String(opt.value) === String(value);
+              const isFocused = i === focusedIndex;
               return (
                 <button
                   key={opt.value}
                   type="button"
-                  className={`dd-option ${isActive ? "dd-option-active" : ""}`}
-                  onClick={() => { onChange(opt.value); setOpen(false); }}
+                  className={`dd-option ${isActive ? "dd-option-active" : ""} ${isFocused ? "dd-option-focused" : ""}`}
+                  onClick={() => { onChange(opt.value); setOpen(false); setFocusedIndex(-1); }}
+                  onMouseEnter={() => setFocusedIndex(i)}
                 >
                   <span>{opt.label}</span>
                   {isActive && <Check className="dd-check" />}
@@ -130,6 +194,7 @@ const Dropdown = ({ options = [], value, onChange, placeholder = "Select...", id
         }
         .dd-option:last-child { border-bottom: none; }
         .dd-option:hover { background: #f5f8ff; color: #2E7DF7; }
+        .dd-option-focused { background: #f5f8ff; color: #2E7DF7; outline: none; }
         .dd-option-active { color: #2E7DF7; font-weight: 600; background: #f0f6ff; }
         .dd-check { font-size: 1rem; color: #2E7DF7; flex-shrink: 0; }
       `}</style>

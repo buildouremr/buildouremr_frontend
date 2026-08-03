@@ -4,11 +4,11 @@ import useAppointmentStats from "./useAppointmentStats";
 import { CalendarCheck, CalendarX, UserX, Calendar, CalendarClock } from 'lucide-react';
 
 const ICON_CONFIG = {
-  total:     { icon: <Calendar />,    iconBg: "#E8F0FF", iconColor: "#2E7DF7", percentage: "+55%", percentColor: "#10b981" },
-  completed: { icon: <CalendarCheck />,    iconBg: "#E8F8F0", iconColor: "#0D9B5C", percentage: "+55%", percentColor: "#10b981" },
-  pending:   { icon: <CalendarClock />, iconBg: "#FFF8E8", iconColor: "#F59E0B", percentage: "+55%", percentColor: "#10b981" },
-  cancelled: { icon: <CalendarX />,        iconBg: "#FFE8E8", iconColor: "#E74C3C", percentage: "-3%", percentColor: "#E74C3C" },
-  noShow:    { icon: <UserX />,    iconBg: "#FFF8E8", iconColor: "#F59E0B", percentage: "+55%", percentColor: "#10b981" },
+  total:     { icon: <Calendar />,    iconBg: "#E8F0FF", iconColor: "#2E7DF7" },
+  completed: { icon: <CalendarCheck />,    iconBg: "#E8F8F0", iconColor: "#0D9B5C" },
+  pending:   { icon: <CalendarClock />, iconBg: "#FFF8E8", iconColor: "#F59E0B" },
+  cancelled: { icon: <CalendarX />,        iconBg: "#FFE8E8", iconColor: "#E74C3C" },
+  noShow:    { icon: <UserX />,    iconBg: "#FFF8E8", iconColor: "#F59E0B" },
 };
 
 /** Map stat key → tab name used in AppointmentTable */
@@ -53,9 +53,14 @@ const AppointmentStats = ({ selectedDate, onFilterSelect, refreshKey }) => {
                     <span className="as-label">{s.label}</span>
                     <div className="as-value-row">
                       <span className="as-value">{s.value}</span>
-                      {cfg.percentage && (
-                        <span style={{ color: cfg.percentColor, fontSize: '0.75rem', fontWeight: 600, marginLeft: '4px' }}>
-                          {cfg.percentage}
+                      {s.change && (
+                        <span style={{ 
+                          color: s.change === "0%" ? "#9ca3af" : (s.change.startsWith("+") ? "#10b981" : "#E74C3C"), 
+                          fontSize: '0.75rem', 
+                          fontWeight: 600, 
+                          marginLeft: '4px' 
+                        }}>
+                          {s.change}
                         </span>
                       )}
                     </div>

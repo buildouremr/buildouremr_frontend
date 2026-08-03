@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect, useMemo } from "react";
-import { ChevronDown, Check, Search, X } from 'lucide-react';
+import { ChevronDown, Search, X } from 'lucide-react';
 
 /**
  * Reusable Multi-Select Filter Dropdown
@@ -14,6 +14,7 @@ import { ChevronDown, Check, Search, X } from 'lucide-react';
 const FilterDropdown = ({ options = [], selectedValues = [], onChange, placeholder = "Select...", id }) => {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
+  const [focusedIndex, setFocusedIndex] = useState(-1);
   const wrapRef = useRef(null);
 
   // Normalise options to { value, label }
@@ -28,11 +29,21 @@ const FilterDropdown = ({ options = [], selectedValues = [], onChange, placehold
   }, [normalised, search]);
 
   useEffect(() => {
+    if (open && focusedIndex >= 0 && wrapRef.current) {
+      const options = wrapRef.current.querySelectorAll(".fdd-option");
+      if (options[focusedIndex]) {
+        options[focusedIndex].scrollIntoView({ block: "nearest" });
+      }
+    }
+  }, [focusedIndex, open]);
+
+  useEffect(() => {
     if (!open) return;
     const handler = (e) => {
       if (wrapRef.current && !wrapRef.current.contains(e.target)) {
         setOpen(false);
         setSearch("");
+        setFocusedIndex(-1);
       }
     };
     document.addEventListener("mousedown", handler);
@@ -52,13 +63,58 @@ const FilterDropdown = ({ options = [], selectedValues = [], onChange, placehold
     onChange([]);
   };
 
+  const handleKeyDown = (e) => {
+    if (!open) {
+      if (e.key === "Enter" || e.key === "ArrowDown" || e.key === " ") {
+        e.preventDefault();
+        setOpen(true);
+        setFocusedIndex(-1);
+      }
+      return;
+    }
+
+    if (e.key === "Escape") {
+      e.preventDefault();
+      setOpen(false);
+      setSearch("");
+      setFocusedIndex(-1);
+      return;
+    }
+
+    if (e.key === "ArrowDown") {
+      e.preventDefault();
+      if (filteredOptions.length > 0) {
+        setFocusedIndex((prev) => (prev + 1) % filteredOptions.length);
+      }
+    } else if (e.key === "ArrowUp") {
+      e.preventDefault();
+      if (filteredOptions.length > 0) {
+        setFocusedIndex((prev) => (prev - 1 + filteredOptions.length) % filteredOptions.length);
+      }
+    } else if (e.key === "Enter") {
+      e.preventDefault();
+      e.stopPropagation();
+      if (focusedIndex >= 0 && focusedIndex < filteredOptions.length) {
+        toggleOption(filteredOptions[focusedIndex].value);
+      }
+    }
+  };
+
   return (
     <>
-      <div className="fdd-wrap" ref={wrapRef} id={id}>
+      <div 
+        className="fdd-wrap" 
+        ref={wrapRef} 
+        id={id}
+        onKeyDown={handleKeyDown}
+      >
         <button
           type="button"
           className={`fdd-trigger ${open ? "fdd-trigger-open" : ""} ${selectedValues.length > 0 ? "fdd-trigger-active" : ""}`}
-          onClick={() => setOpen((v) => !v)}
+          onClick={() => {
+            setOpen((v) => !v);
+            setFocusedIndex(-1);
+          }}
         >
           <span className={selectedValues.length > 0 ? "fdd-value" : "fdd-placeholder"}>
             {selectedValues.length === 0 
@@ -102,14 +158,16 @@ const FilterDropdown = ({ options = [], selectedValues = [], onChange, placehold
               {filteredOptions.length === 0 ? (
                 <div className="fdd-empty">No results found</div>
               ) : (
-                filteredOptions.map((opt) => {
+                filteredOptions.map((opt, i) => {
                   const isActive = selectedValues.includes(opt.value);
+                  const isFocused = i === focusedIndex;
                   return (
                     <button
                       key={opt.value}
                       type="button"
-                      className={`fdd-option ${isActive ? "fdd-option-active" : ""}`}
+                      className={`fdd-option ${isActive ? "fdd-option-active" : ""} ${isFocused ? "fdd-option-focused" : ""}`}
                       onClick={() => toggleOption(opt.value)}
+                      onMouseEnter={() => setFocusedIndex(i)}
                     >
                       <span className="fdd-option-label">{opt.label}</span>
                       {isActive && <div className="fdd-active-indicator" />}
@@ -251,6 +309,7 @@ const FilterDropdown = ({ options = [], selectedValues = [], onChange, placehold
           margin-bottom: 2px;
         }
         .fdd-option:hover { background: #f9fafb; }
+        .fdd-option-focused { background: #f9fafb; outline: none; }
         .fdd-option-active { background: #f0f6ff; color: #1a1a2e; font-weight: 500; }
         .fdd-option-active:hover { background: #e0f0ff; }
         

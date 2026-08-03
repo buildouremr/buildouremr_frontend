@@ -35,16 +35,32 @@ const useAppointmentStats = (selectedDate, refreshKey) => {
     fetchCounts();
   }, [fetchCounts, refreshKey]);
 
-  // Build the stats array from API keys
-  const stats = counts
-    ? [
-        { key: "total",     label: "Total",     value: counts.totalAppointments ?? 0 },
-        { key: "completed", label: "Completed",  value: counts.completedCount    ?? 0 },
-        { key: "pending",   label: "Pending",    value: (counts.pendingCount ?? 0) + (counts.waitingCount ?? 0) },
-        { key: "cancelled", label: "Cancelled",  value: counts.cancelledCount    ?? 0 },
-        { key: "noShow",    label: "No Show",    value: counts.noShowCount       ?? 0 },
-      ]
-    : [];
+  let stats = [];
+  if (counts) {
+    const total = counts.totalAppointments ?? 0;
+    const completed = counts.completedCount ?? 0;
+    const pending = (counts.pendingCount ?? 0) + (counts.waitingCount ?? 0);
+    const cancelled = counts.cancelledCount ?? 0;
+    const noShow = counts.noShowCount ?? 0;
+
+    const getPosPercent = (val) => {
+      if (total === 0 || val === 0) return "0%";
+      return "+" + Math.round((val / total) * 100) + "%";
+    };
+
+    const getNegPercent = (val) => {
+      if (total === 0 || val === 0) return "0%";
+      return "-" + Math.round((val / total) * 100) + "%";
+    };
+
+    stats = [
+      { key: "total",     label: "Total",     value: total,     change: total > 0 ? "+100%" : "0%" },
+      { key: "completed", label: "Completed", value: completed, change: getPosPercent(completed) },
+      { key: "pending",   label: "Pending",   value: pending,   change: getPosPercent(pending) },
+      { key: "cancelled", label: "Cancelled", value: cancelled, change: getNegPercent(cancelled) },
+      { key: "noShow",    label: "No Show",   value: noShow,    change: getNegPercent(noShow) },
+    ];
+  }
 
   return { stats, counts, loading, error, fetchCounts };
 };

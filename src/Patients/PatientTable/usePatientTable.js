@@ -21,9 +21,11 @@ const usePatientTable = ({ rowsPerPage, refreshTrigger }) => {
         PatientsAPI.getAllPatients(),
         PatientsAPI.getChronicDiseases()
       ]);
-      setPatients(patientsRes.data?.data ?? []);
-      const diseases = diseasesRes.data?.data ?? [];
-      setChronicDiseases(diseases.map(d => ({ value: d.chronicDiseaseName, label: d.chronicDiseaseName })));
+      const fetchedPatients = patientsRes.data?.data;
+      setPatients(Array.isArray(fetchedPatients) ? fetchedPatients : []);
+      const diseases = diseasesRes.data?.data;
+      const safeDiseases = Array.isArray(diseases) ? diseases : [];
+      setChronicDiseases(safeDiseases.map(d => ({ value: d.chronicDiseaseName, label: d.chronicDiseaseName })));
     } catch (err) {
       setError(err?.message || "Failed to load data");
     } finally {

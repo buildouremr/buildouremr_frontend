@@ -1,7 +1,7 @@
 import usePatientQueue from "./usePatientQueue";
 
 import Pagination from "../../components/Pagination/Pagination";
-import { User, Calendar } from 'lucide-react';
+import { User, Calendar, CalendarCheck } from 'lucide-react';
 
 const MAX_ROWS = 5;
 
@@ -41,14 +41,17 @@ const PatientQueue = ({ selectedDate, onViewAll }) => {
         ) : patients.length === 0 ? (
           /* Empty state still takes fixed height */
           <div className="pq-fixed-area pq-empty-state">
-            <div className="pq-empty-icon">
-              <Calendar style={{ fontSize: "1.6rem", color: "#fff" }} />
+            <div className="pq-empty-title-row">
+              <div className="pq-empty-icon">
+                <CalendarCheck style={{ fontSize: "1.2rem", color: "#fff" }} />
+              </div>
+              <h3 className="pq-empty-title">You're all caught up!</h3>
             </div>
-            <h3 className="pq-empty-title">You're all caught up!</h3>
             <p className="pq-empty-text">
               No patients are waiting at the moment. Great job keeping up with your schedule.
             </p>
             <button className="pq-empty-btn" onClick={handleViewAll}>
+              <Calendar style={{ fontSize: "1.1rem" }} />
               View next day's schedule
             </button>
           </div>
@@ -299,28 +302,37 @@ const PatientQueue = ({ selectedDate, onViewAll }) => {
           text-align: center;
           padding: 40px 14px;
         }
+        .pq-empty-title-row {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          margin-bottom: 10px;
+        }
         .pq-empty-icon {
-          width: 48px;
-          height: 48px;
-          background: #34d399;
-          border-radius: 12px;
+          width: 32px;
+          height: 32px;
+          background: #0D9B5C;
+          border-radius: 8px;
           display: flex;
           align-items: center;
           justify-content: center;
-          margin-bottom: 20px;
         }
         .pq-empty-title {
           font-size: 1.5rem;
           color: #1a1a2e;
-          font-weight: 700;
-          margin: 0 0 10px 0;
+          font-weight: 600;
+          margin: 0;
         }
         .pq-empty-text {
           color: #9ca3af;
           font-size: 1rem;
+          font-weight: 400;
           margin: 0 0 20px 0;
         }
         .pq-empty-btn {
+          display: inline-flex;
+          align-items: center;
+          gap: 8px;
           background: #2E7DF7;
           color: #fff;
           border: none;

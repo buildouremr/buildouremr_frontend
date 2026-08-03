@@ -45,6 +45,7 @@ const useNewAppointmentModal = ({ onClose, onSuccess, onError }) => {
   const [doctors, setDoctors] = useState([]);
   const [appointmentTypes, setAppointmentTypes] = useState([]);
   const [patientSearchResults, setPatientSearchResults] = useState([]);
+  const [originalPatient, setOriginalPatient] = useState(null);
 
   // Prevent duplicate submissions
   const submittingRef = useRef(false);
@@ -109,15 +110,31 @@ const useNewAppointmentModal = ({ onClose, onSuccess, onError }) => {
     else if (g) gender = "Other";
 
     const nameParts = (patient.patientName || "").trim().split(/\s+/);
+    const firstName = nameParts[0] || "";
+    const lastName = nameParts.slice(1).join(" ") || "";
+    const phoneNumber = patient.patientMobileNo || "";
+    const dateOfBirth = patient.patientDob || "";
+    
     setFormData((prev) => ({
       ...prev,
       patientId: String(patient.patientId || ""),
-      firstName: nameParts[0] || "",
-      lastName: nameParts.slice(1).join(" ") || "",
-      phoneNumber: patient.patientMobileNo || "",
-      dateOfBirth: patient.patientDob || "",
+      firstName,
+      lastName,
+      phoneNumber,
+      dateOfBirth,
       gender,
     }));
+    
+    setOriginalPatient({
+      firstName,
+      lastName,
+      phoneNumber,
+      dateOfBirth,
+      gender,
+      email: "",
+      location: "",
+      chronicDisease: ""
+    });
     setPatientSearchResults([]);
     // Clear related validation errors
     setValidationErrors((prev) => {
@@ -142,6 +159,7 @@ const useNewAppointmentModal = ({ onClose, onSuccess, onError }) => {
     }));
     setValidationErrors({});
     setPatientSearchResults([]);
+    setOriginalPatient(null);
   }, []);
 
   /** Show time slots only once a date AND doctor are selected */
@@ -209,7 +227,7 @@ const useNewAppointmentModal = ({ onClose, onSuccess, onError }) => {
       patientId: isExisting ? formData.patientId : null,
       firstName: formData.firstName,
       lastName: formData.lastName,
-      mobileNumber: formData.phoneNumber,
+      mobileNumber: formData.phoneNumber.replace(/\D/g, ""),
       email: formData.email,
       dateOfBirth: formData.dateOfBirth,
       gender: formData.gender,
@@ -260,6 +278,7 @@ const useNewAppointmentModal = ({ onClose, onSuccess, onError }) => {
     doctors,
     appointmentTypes,
     availableSlots,
+    originalPatient,
     hasUnsavedChanges,
   };
 };

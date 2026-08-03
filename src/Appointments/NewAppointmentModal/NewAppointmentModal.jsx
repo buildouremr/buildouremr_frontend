@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 
 import DatePicker from "../../components/DatePicker/DatePicker";
 import Dropdown from "../../components/Dropdown/Dropdown";
@@ -55,6 +55,7 @@ const NewAppointmentModal = ({ onClose, onSuccess, onError }) => {
     doctors,
     appointmentTypes,
     availableSlots,
+    originalPatient,
     hasUnsavedChanges,
   } = useNewAppointmentModal({ onClose, onSuccess, onError });
 
@@ -69,6 +70,16 @@ const NewAppointmentModal = ({ onClose, onSuccess, onError }) => {
     }
   };
 
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === "Escape") {
+        handleAttemptClose();
+      }
+    };
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [hasUnsavedChanges, onClose]);
+
   const handleNameChange = (field, value) => {
     handleSearchByName(field, value);
     setActiveSearchField(field);
@@ -80,6 +91,11 @@ const NewAppointmentModal = ({ onClose, onSuccess, onError }) => {
   };
 
   const isExisting = formData.patientType === "Existing Patient";
+
+  const isReadOnly = (field) => {
+    if (!isExisting || !formData.patientId) return false;
+    return !!(originalPatient && originalPatient[field]);
+  };
 
   return (
     <>
@@ -150,7 +166,7 @@ const NewAppointmentModal = ({ onClose, onSuccess, onError }) => {
                     onBlur={() => setTimeout(() => setActiveSearchField(null), 150)}
                     autoComplete="off"
                     className={validationErrors.firstName || validationErrors.patientId ? "nam-input-error" : ""}
-                    readOnly={isExisting && !!formData.patientId}
+                    readOnly={isReadOnly("firstName")}
                   />
                   {activeSearchField === "firstName" && (
                     <PatientSearchDropdown results={patientSearchResults} onSelect={handlePatientSelect} />
@@ -170,7 +186,7 @@ const NewAppointmentModal = ({ onClose, onSuccess, onError }) => {
                     onBlur={() => setTimeout(() => setActiveSearchField(null), 150)}
                     autoComplete="off"
                     className={validationErrors.lastName ? "nam-input-error" : ""}
-                    readOnly={isExisting && !!formData.patientId}
+                    readOnly={isReadOnly("lastName")}
                   />
                   {activeSearchField === "lastName" && (
                     <PatientSearchDropdown results={patientSearchResults} onSelect={handlePatientSelect} />
@@ -180,32 +196,39 @@ const NewAppointmentModal = ({ onClose, onSuccess, onError }) => {
 
                 {/* Phone Number */}
                 <div className="nam-field">
-                  <label htmlFor="nam-phone">
-                    <Phone /> Phone Number
-                    {!isExisting && <span className="nam-req">*</span>}
-                  </label>
+                  <label>Mobile number *</label>
                   <input
-                    id="nam-phone"
                     type="text"
-                    placeholder="(+91) 98876xxxxx"
+                    placeholder="909-090-9090"
                     value={formData.phoneNumber}
-                    onChange={(e) => handleChange("phoneNumber", e.target.value)}
+                    onChange={(e) => {
+                      const val = e.target.value.replace(/\D/g, "");
+                      const limited = val.substring(0, 10);
+                      let formatted = limited;
+                      if (limited.length > 3 && limited.length <= 6) {
+                        formatted = `${limited.substring(0,3)}-${limited.substring(3)}`;
+                      } else if (limited.length > 6) {
+                        formatted = `${limited.substring(0,3)}-${limited.substring(3,6)}-${limited.substring(6)}`;
+                      }
+                      handleChange("phoneNumber", formatted);
+                    }}
                     className={validationErrors.phoneNumber ? "nam-input-error" : ""}
-                    readOnly={isExisting && !!formData.patientId}
+                    readOnly={isReadOnly("phoneNumber")}
+                    maxLength="12"
                   />
                   <FieldError msg={validationErrors.phoneNumber} />
                 </div>
 
                 {/* Email */}
                 <div className="nam-field">
-                  <label htmlFor="nam-email"><Mail /> Email id</label>
+                  <label htmlFor="nam-email"><Mail /> Email Id</label>
                   <input
                     id="nam-email"
                     type="email"
                     placeholder="Name@gmail.com"
                     value={formData.email}
                     onChange={(e) => handleChange("email", e.target.value)}
-                    readOnly={isExisting && !!formData.patientId}
+                    readOnly={isReadOnly("email")}
                   />
                 </div>
 
@@ -217,7 +240,7 @@ const NewAppointmentModal = ({ onClose, onSuccess, onError }) => {
                     onChange={(v) => handleChange("dateOfBirth", v)}
                     placeholder="dd-mm-yyyy"
                     openUpward={false}
-                    disabled={isExisting && !!formData.patientId}
+                    disabled={isReadOnly("dateOfBirth")}
                   />
                 </div>
 
@@ -233,7 +256,7 @@ const NewAppointmentModal = ({ onClose, onSuccess, onError }) => {
                     onChange={(v) => handleChange("gender", v)}
                     placeholder="Select Gender"
                     className={validationErrors.gender ? "nam-input-error" : ""}
-                    disabled={isExisting && !!formData.patientId}
+                    disabled={isReadOnly("gender")}
                   />
                   <FieldError msg={validationErrors.gender} />
                 </div>
@@ -247,7 +270,7 @@ const NewAppointmentModal = ({ onClose, onSuccess, onError }) => {
                     placeholder="XYZ Street, city, town"
                     value={formData.location}
                     onChange={(e) => handleChange("location", e.target.value)}
-                    readOnly={isExisting && !!formData.patientId}
+                    readOnly={isReadOnly("location")}
                   />
                 </div>
 
@@ -260,7 +283,7 @@ const NewAppointmentModal = ({ onClose, onSuccess, onError }) => {
                     placeholder="Add the chronic disease"
                     value={formData.chronicDisease}
                     onChange={(e) => handleChange("chronicDisease", e.target.value)}
-                    readOnly={isExisting && !!formData.patientId}
+                    readOnly={isReadOnly("chronicDisease")}
                   />
                 </div>
 

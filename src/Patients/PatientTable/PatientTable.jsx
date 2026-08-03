@@ -141,8 +141,8 @@ const PatientTable = ({ refreshTrigger }) => {
                   <colgroup>
                     <col style={{ width: "100px" }} />
                     <col style={{ width: "220px" }} />
-                    <col style={{ width: "210px" }} />
-                    <col style={{ width: "150px" }} />
+                    <col style={{ width: "140px" }} />
+                    <col style={{ width: "220px" }} />
                     <col style={{ width: "150px" }} />
                     <col style={{ width: "110px" }} />
                     <col style={{ width: "130px" }} />
@@ -171,8 +171,8 @@ const PatientTable = ({ refreshTrigger }) => {
                   <colgroup>
                     <col style={{ width: "100px" }} />
                     <col style={{ width: "220px" }} />
-                    <col style={{ width: "210px" }} />
-                    <col style={{ width: "150px" }} />
+                    <col style={{ width: "140px" }} />
+                    <col style={{ width: "220px" }} />
                     <col style={{ width: "150px" }} />
                     <col style={{ width: "110px" }} />
                     <col style={{ width: "130px" }} />
@@ -438,7 +438,7 @@ const PatientTable = ({ refreshTrigger }) => {
           background: #e8f8f0; color: #0D9B5C; font-size: 0.75rem; font-weight: 600;
           display: flex; align-items: center; justify-content: center;
         }
-        .pt-doctor-name { font-weight: 600; color: #1a1a2e; font-size: 0.85rem; }
+        .pt-doctor-name { font-weight: 600; color: #1a1a2e; font-size: 0.85rem; white-space: nowrap; }
 
         .pt-contact-info { display: flex; flex-direction: column; gap: 3px; }
         .pt-contact-phone { font-weight: 500; color: #4b5563; font-size: 0.82rem; white-space: nowrap; }

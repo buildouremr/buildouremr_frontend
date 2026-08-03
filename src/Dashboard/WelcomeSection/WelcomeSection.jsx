@@ -45,8 +45,8 @@ const WelcomeSection = ({ summaryData, summaryLoading, selectedDate, onDateChang
 
         <div className="ws-right">
           <button className="ws-create-btn">
-            <Plus style={{ fontSize: "1.2rem", strokeWidth: 1 }} />
-            Create Appointment
+            <Plus style={{ fontSize: "1.1rem" }} />
+            <span>Create Appointment</span>
           </button>
 
           <div className="ws-date-nav">
@@ -112,18 +112,19 @@ const WelcomeSection = ({ summaryData, summaryLoading, selectedDate, onDateChang
           display: flex;
           align-items: center;
           gap: 6px;
-          background: #0066FF;
-          color: #fff;
+          padding: 9px 20px;
           border: none;
-          padding: 8px 16px;
-          border-radius: 6px;
-          font-size: 0.85rem;
+          background: #2E7DF7;
+          color: #fff;
+          border-radius: 8px;
+          font-size: 0.88rem;
           font-weight: 600;
           cursor: pointer;
           transition: background 0.2s;
+          white-space: nowrap;
         }
         .ws-create-btn:hover {
-          background: #005ce6;
+          background: #1b65d4;
         }
 
         .ws-date-nav {
