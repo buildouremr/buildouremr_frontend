@@ -35,7 +35,7 @@ const SkeletonRow = () => (
   </tr>
 );
 
-const AppointmentTable = ({ selectedDate, currentPage, onPageChange, onNextDay, externalActiveTab, refreshKey }) => {
+const AppointmentTable = ({ selectedDate, currentPage, onPageChange, onNextDay, externalActiveTab, refreshKey, onOpenChart }) => {
   // ── Dynamic row count based on container height ──────────────────────
   const observerRef = useRef(null);
   const [rowsPerPage, setRowsPerPage] = useState(10);
@@ -62,7 +62,7 @@ const AppointmentTable = ({ selectedDate, currentPage, onPageChange, onNextDay, 
     loading, error,
     searchQuery, totalPages,
     handleTabChange,
-    handleStartConsultation, handleSearchChange,
+    handleSearchChange,
     fetchAppointments,
   } = useAppointmentTable({ selectedDate, currentPage, onPageChange, externalActiveTab, rowsPerPage });
 
@@ -208,6 +208,9 @@ const AppointmentTable = ({ selectedDate, currentPage, onPageChange, onNextDay, 
                         <tr
                           key={appt.apptId ?? i}
                           className={`at-row ${isNext ? "at-row-selected" : ""}`}
+                          onClick={() => {
+                            if (onOpenChart) onOpenChart(appt.patientId, appt.apptId);
+                          }}
                         >
                           {/* Time */}
                           <td className="at-time-cell">
@@ -280,7 +283,9 @@ const AppointmentTable = ({ selectedDate, currentPage, onPageChange, onNextDay, 
                             <div className="at-actions-cell">
                               <button
                                 className="at-action-btn at-btn-solid"
-                                onClick={() => handleStartConsultation(appt)}
+                                onClick={() => {
+                                  if (onOpenChart) onOpenChart(appt.patientId, appt.apptId);
+                                }}
                               >
                                 Start Consultation
                               </button>

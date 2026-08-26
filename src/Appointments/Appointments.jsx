@@ -12,7 +12,7 @@ const getTodayDate = () => {
   return d;
 };
 
-const Appointments = ({ initialFilter }) => {
+const Appointments = ({ initialFilter, onOpenChart }) => {
   const { showToast } = useToast();
   const [selectedDate, setSelectedDate] = useState(getTodayDate);
   const [currentPage, setCurrentPage] = useState(1);
@@ -86,6 +86,7 @@ const Appointments = ({ initialFilter }) => {
           externalActiveTab={activeFilter}
           onExternalTabConsumed={() => {}}
           refreshKey={refreshKey}
+          onOpenChart={onOpenChart}
         />
       </div>
 

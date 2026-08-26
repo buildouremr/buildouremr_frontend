@@ -1,4 +1,6 @@
+import React, { useState } from 'react';
 import { Phone, Mail, MapPin, Calendar, Clock, List } from 'lucide-react';
+import encounterAPI from '../../Patients/API/encounterAPI';
 
 // API response keys from getAppointmentPatientDetails:
 // patientName, gender, patientId, emailId, mobileNo, dob,
@@ -68,6 +70,28 @@ const SkeletonPanel = () => (
 );
 
 const PatientDetailPanel = ({ patient, loading, onClose }) => {
+  const [starting, setStarting] = useState(false);
+
+  const handleStartConsultation = async () => {
+    if (!patient || !patient.patientId) return;
+    setStarting(true);
+    try {
+      const response = await encounterAPI.startEncounter(patient.patientId);
+      if (response && response.status === "SUCCESS") {
+        const encounterId = response.data.encounterId;
+        console.log("Active Encounter:", encounterId);
+        alert("Encounter started! Encounter ID: " + encounterId);
+      } else {
+        alert("Failed to start encounter: " + response.data);
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Error starting encounter. Please check console.");
+    } finally {
+      setStarting(false);
+    }
+  };
+
   if (loading) return <SkeletonPanel />;
   if (!patient) return null;
 
@@ -177,9 +201,10 @@ const PatientDetailPanel = ({ patient, loading, onClose }) => {
         <div className="pdp-footer">
           <button
             className="pdp-cta-btn"
-            onClick={() => console.log("Start consultation:", patient.patientId)}
+            onClick={handleStartConsultation}
+            disabled={starting}
           >
-            Start Consultation &nbsp;→
+            {starting ? "Starting..." : "Start Consultation"} &nbsp;→
           </button>
         </div>
       </div>

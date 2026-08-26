@@ -14,6 +14,17 @@ const GENDER_OPTIONS = [
   { value: "Other", label: "Other" },
 ];
 
+const BLOOD_GROUP_OPTIONS = [
+  { value: "A+", label: "A+" },
+  { value: "A-", label: "A-" },
+  { value: "B+", label: "B+" },
+  { value: "B-", label: "B-" },
+  { value: "AB+", label: "AB+" },
+  { value: "AB-", label: "AB-" },
+  { value: "O+", label: "O+" },
+  { value: "O-", label: "O-" },
+];
+
 const TagInputBelow = ({ tags, onAdd, onRemove, placeholder }) => {
   const [input, setInput] = useState("");
 
@@ -130,6 +141,7 @@ const NewPatientModal = ({ onClose, onSuccess, onError }) => {
     };
     document.addEventListener("keydown", handleKeyDown);
     return () => document.removeEventListener("keydown", handleKeyDown);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [hasUnsavedChanges, onClose]);
 
   const handleNameChange = (field, value) => {
@@ -313,6 +325,42 @@ const NewPatientModal = ({ onClose, onSuccess, onError }) => {
                     placeholder="XYZ Street, city ,town"
                     value={formData.location}
                     onChange={(e) => handleChange("location", e.target.value)}
+                  />
+                </div>
+                <div className="npm-field">
+                  <label><User /> Height (cm)</label>
+                  <input
+                    type="text"
+                    placeholder="170 cm"
+                    value={formData.height}
+                    onChange={(e) => handleChange("height", e.target.value)}
+                  />
+                </div>
+                <div className="npm-field">
+                  <label><User /> Weight (kg)</label>
+                  <input
+                    type="text"
+                    placeholder="70 kg"
+                    value={formData.weight}
+                    onChange={(e) => handleChange("weight", e.target.value)}
+                  />
+                </div>
+                <div className="npm-field">
+                  <label><User /> BMI</label>
+                  <input
+                    type="text"
+                    placeholder="24.2"
+                    value={formData.bmi}
+                    onChange={(e) => handleChange("bmi", e.target.value)}
+                  />
+                </div>
+                <div className="npm-field">
+                  <label><User /> Blood Group</label>
+                  <Dropdown
+                    options={BLOOD_GROUP_OPTIONS}
+                    value={formData.bloodGroup}
+                    onChange={(v) => handleChange("bloodGroup", v)}
+                    placeholder="Select Blood Group"
                   />
                 </div>
               </div>

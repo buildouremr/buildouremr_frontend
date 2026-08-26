@@ -31,17 +31,17 @@ const useDashboard = () => {
   const [countdown, setCountdown] = useState(60);
 
   const handleLogout = () => {
-    window.dispatchEvent(new Event("session-expired"));
+    // window.dispatchEvent(new Event("session-expired"));
   };
 
   const resetActivity = useIdleTimer(
-    handleLogout,
-    () => setShowTimeoutModal(true)
+    () => {}, // handleLogout,
+    () => {} // setShowTimeoutModal(true)
   );
 
   const continueSession = () => {
     setShowTimeoutModal(false);
-    resetActivity();
+    // resetActivity();
   };
 
   const fetchSummary = useCallback(async (date) => {

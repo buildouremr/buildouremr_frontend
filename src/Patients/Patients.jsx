@@ -5,7 +5,7 @@ import NewPatientModal from "./NewPatientModal/NewPatientModal";
 
 import { useToast } from "../components/Toast/Toast";
 
-const Patients = () => {
+const Patients = ({ onOpenChart }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
   const { showToast } = useToast();
@@ -24,7 +24,7 @@ const Patients = () => {
     <>
       <div className="pt-page">
         <PatientHeader onCreatePatient={() => setIsModalOpen(true)} />
-        <PatientTable refreshTrigger={refreshTrigger} />
+        <PatientTable refreshTrigger={refreshTrigger} onOpenChart={onOpenChart} />
       </div>
 
       {isModalOpen && (

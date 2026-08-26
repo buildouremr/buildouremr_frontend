@@ -10,6 +10,8 @@ import PatientsChart from "./PatientsChart/PatientsChart";
 import RevenueChart from "./RevenueChart/RevenueChart";
 import Appointments from "../Appointments/Appointments";
 import Patients from "../Patients/Patients";
+import PatientProfile from "../Patients/PatientProfile/PatientProfile.jsx";
+import PatientChart from "../Patients/PatientChart/PatientChart";
 import useDashboard from "./useDashboard";
 import SessionTimeoutModal from "../components/SessionTimeoutModal";
 
@@ -17,6 +19,10 @@ import SessionTimeoutModal from "../components/SessionTimeoutModal";
 const Dashboard = ({ onLogout }) => {
   const [activeMenu, setActiveMenu] = useState("Dashboard");
   const [apptInitialFilter, setApptInitialFilter] = useState("All Appointments");
+  const [chartPatientId, setChartPatientId] = useState(null);
+  const [chartAppointmentId, setChartAppointmentId] = useState(null);
+  const [chartEncounterId, setChartEncounterId] = useState(null);
+  const [previousMenu, setPreviousMenu] = useState("Dashboard");
 
   const {
     summaryData,
@@ -34,12 +40,39 @@ const Dashboard = ({ onLogout }) => {
     setActiveMenu("Appointments");
   };
 
+  /** Navigate to Patient Chart / Profile */
+  const goToPatientProfile = (patientId, appointmentId = null) => {
+    setChartPatientId(patientId);
+    setChartAppointmentId(appointmentId);
+    setPreviousMenu(activeMenu);
+    setActiveMenu("PatientProfile");
+  };
+
+  /** Navigate to Notes */
+  const goToPatientNotes = (patientId, encounterId = null) => {
+    setChartPatientId(patientId);
+    setChartEncounterId(encounterId);
+    setPreviousMenu(activeMenu);
+    setActiveMenu("PatientChart");
+  };
+
   const renderContent = () => {
     if (activeMenu === "Appointments") {
-      return <Appointments initialFilter={apptInitialFilter} />;
+      return <Appointments initialFilter={apptInitialFilter} onOpenChart={goToPatientProfile} />;
     }
     if (activeMenu === "Patients") {
-      return <Patients />;
+      return <Patients onOpenChart={goToPatientProfile} />;
+    }
+    if (activeMenu === "PatientProfile") {
+      return <PatientProfile 
+               patientId={chartPatientId} 
+               appointmentId={chartAppointmentId} 
+               onBack={() => setActiveMenu(previousMenu)} 
+               onOpenNotes={goToPatientNotes} 
+             />;
+    }
+    if (activeMenu === "PatientChart") {
+      return <PatientChart patientId={chartPatientId} appointmentId={chartAppointmentId} encounterId={chartEncounterId} onBack={() => setActiveMenu(previousMenu)} />;
     }
 
     // Default Dashboard Overview

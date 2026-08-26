@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import useSidebar from "./useSidebar";
 import { LayoutDashboard, Calendar, Users, Stethoscope, TestTube, Pill, Settings, FileText, Activity, Layers, ChevronRight, Leaf, ArrowLeftFromLine, ArrowRightFromLine } from 'lucide-react';
 
@@ -13,6 +13,13 @@ const Sidebar = ({ activeMenu: propActiveMenu, onMenuChange, summaryData }) => {
   const { activeMenu, mainMenuItems, helpMenuItems, handleMenuClick } = useSidebar(propActiveMenu, onMenuChange, summaryData);
   const [isPinned, setIsPinned] = useState(true);
   const [isHovered, setIsHovered] = useState(false);
+  
+  useEffect(() => {
+    if (propActiveMenu === 'PatientChart') {
+      setIsPinned(false);
+    }
+  }, [propActiveMenu]);
+
   const isExpanded = isPinned || isHovered;
 
   return (

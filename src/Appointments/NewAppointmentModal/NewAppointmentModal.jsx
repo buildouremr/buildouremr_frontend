@@ -4,7 +4,7 @@ import DatePicker from "../../components/DatePicker/DatePicker";
 import Dropdown from "../../components/Dropdown/Dropdown";
 import ConfirmModal from "../../components/ConfirmModal/ConfirmModal";
 import useNewAppointmentModal from "./useNewAppointmentModal";
-import { X, User, UserPlus, Phone, Mail, MapPin, Calendar, FileText, Stethoscope } from 'lucide-react';
+import { X, User, UserPlus, Mail, MapPin, Calendar, FileText, Stethoscope } from 'lucide-react';
 
 const GENDER_OPTIONS = [
   { value: "Male", label: "Male" },
@@ -78,6 +78,7 @@ const NewAppointmentModal = ({ onClose, onSuccess, onError }) => {
     };
     document.addEventListener("keydown", handleKeyDown);
     return () => document.removeEventListener("keydown", handleKeyDown);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [hasUnsavedChanges, onClose]);
 
   const handleNameChange = (field, value) => {

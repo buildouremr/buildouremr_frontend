@@ -57,7 +57,7 @@ const getChronicBadgeStyle = (diseaseName) => {
   return { color: '#0D9B5C', background: '#E8F8F0' };
 };
 
-const PatientTable = ({ refreshTrigger }) => {
+const PatientTable = ({ refreshTrigger, onOpenChart }) => {
   const observerRef = useRef(null);
   const [rowsPerPage, setRowsPerPage] = useState(10);
 
@@ -198,7 +198,7 @@ const PatientTable = ({ refreshTrigger }) => {
                       const isActive = patient.patientRegistrationActive;
 
                       return (
-                        <tr key={patient.patientRegistrationId ?? i} className="pt-row">
+                        <tr key={patient.patientRegistrationId ?? i} className="pt-row" style={{cursor: 'pointer'}} onClick={() => { if (onOpenChart) onOpenChart(patient.patientRegistrationId, null); }}>
                           <td>
                             <span className="pt-id">{formatPatientId(patient.patientRegistrationId)}</span>
                           </td>
