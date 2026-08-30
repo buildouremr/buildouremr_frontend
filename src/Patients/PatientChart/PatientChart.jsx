@@ -19,33 +19,42 @@ const PatientChart = ({ patientId, appointmentId, encounterId, onBack }) => {
         if (appointmentId) {
           const res = await PatientChartAPI.getChart(appointmentId);
           data = res.data;
+        } else if (encounterId) {
+          const res = await PatientChartAPI.getChartByEncounter(patientId, encounterId);
+          data = res.data;
         }
         
-        // If no chart or no appointmentId, fetch snapshot
+        // If no chart or no appointmentId/encounterId, fetch snapshot
         if (!data) {
-          const res = await PatientChartAPI.getPatientSnapshot(patientId);
+          const res = await PatientChartAPI.getPatientSnapshot(patientId, encounterId);
           data = res.data;
         }
         
         setChartData(data);
         
-        // Map DTO to UI format
-        setPatientData({
-          name: data.patientName || 'Unknown',
-          gender: data.patientGender || '-',
-          dob: data.patientDob || '-',
-          age: data.patientAge || '-',
-          weight: data.patientWeight || '-',
-          height: data.patientHeight || '-',
-          bmi: data.patientBmi || '-',
-          bloodGroup: data.patientBloodGroup || '-',
-          allergies: data.patientAllergies || '',
-          chronicConditions: data.patientChronicConditions || '',
-          riskFactors: data.patientRiskFactors || '',
-          insurance: data.patientInsurance || 'None',
-          lastVisit: "12 May 2024", // Hardcoded for UI layout as API doesn't have it yet
-          nextVisit: "15 Jun 2024"  // Hardcoded for UI layout as API doesn't have it yet
-        });
+        // Fetch header specifically for the patient data layout
+        const headerRes = await PatientChartAPI.getPatientHeader(patientId);
+        if (headerRes.data) {
+          setPatientData(headerRes.data);
+        } else {
+          // Fallback if not found
+          setPatientData({
+            name: 'Unknown',
+            gender: '-',
+            dob: '-',
+            age: '-',
+            weight: '-',
+            height: '-',
+            bmi: '-',
+            bloodGroup: '-',
+            allergies: '',
+            chronicConditions: '',
+            riskFactors: '',
+            insurance: 'None',
+            lastVisit: "--",
+            nextVisit: "--"
+          });
+        }
       } catch (err) {
         console.error("Error fetching patient chart data:", err);
       } finally {
@@ -63,9 +72,9 @@ const PatientChart = ({ patientId, appointmentId, encounterId, onBack }) => {
   }
 
   return (
-    <div className="flex flex-col h-screen bg-gray-50 overflow-hidden font-sans">
+    <div className="flex flex-col h-screen bg-white overflow-hidden font-sans">
       <ChartHeader patientData={patientData} onBack={onBack} />
-      <div className="flex flex-1 overflow-hidden gap-6 p-6">
+      <div className="flex flex-1 overflow-hidden">
         <ChartLeftSidebar patientId={patientId} patientData={patientData} />
         <ChartMainBody patientId={patientId} appointmentId={appointmentId} encounterId={encounterId} initialData={chartData} />
         <ChartRightSidebar patientId={patientId} patientData={patientData} initialData={chartData} />

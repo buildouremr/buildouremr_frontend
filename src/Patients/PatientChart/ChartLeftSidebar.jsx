@@ -21,9 +21,8 @@ const ChartLeftSidebar = ({ patientId, patientData }) => {
   };
 
   return (
-    <div className="w-[300px] flex flex-col gap-4 overflow-y-auto pr-1 shrink-0 scrollbar-thin scrollbar-thumb-gray-300">
-      {/* Patient Snapshot */}
-      <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5 flex flex-col gap-4">
+    <div className="w-[280px] bg-white border-r border-gray-200 flex flex-col overflow-y-auto shrink-0 scrollbar-thin scrollbar-thumb-gray-300">
+      <div className="p-6 flex flex-col gap-6">
         <div className="flex flex-col gap-1">
           <span className="text-lg font-semibold text-gray-900">Patient Snapshot</span>
           <span className="text-xs text-gray-400">Patient details in one spot</span>

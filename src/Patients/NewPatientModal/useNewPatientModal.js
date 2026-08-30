@@ -58,10 +58,6 @@ const useNewPatientModal = ({ onClose, onSuccess, onError }) => {
     doctorId: "",
     appointmentDate: "",
     appointmentTime: "",
-    height: "",
-    weight: "",
-    bmi: "",
-    bloodGroup: "",
   });
 
   const handleChange = (field, value) => {
@@ -235,10 +231,6 @@ const useNewPatientModal = ({ onClose, onSuccess, onError }) => {
       providerId: formData.doctorId ? parseInt(formData.doctorId, 10) : null,
       appointmentDate: formData.appointmentDate,
       appointmentTime: formData.appointmentTime,
-      height: formData.height,
-      weight: formData.weight,
-      bmi: formData.bmi,
-      bloodGroup: formData.bloodGroup,
       ...(formData.patientType === "Existing Patient" && formData.patientId
         ? { patientId: parseInt(formData.patientId, 10) }
         : {}),

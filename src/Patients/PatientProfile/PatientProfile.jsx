@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { usePatientProfile, createEncounter } from "./PatientProfile";
+import ChartHeader from "../PatientChart/ChartHeader";
 import "./PatientProfile.css";
 
 // SVG Icons
@@ -84,74 +85,20 @@ const PatientProfile = ({ patientId, appointmentId, onBack, onOpenNotes }) => {
   return (
     <div className="patient-profile-container">
       {/* HEADER SECTION */}
-      <div className="pp-header">
-        <div className="pp-header-left">
-          <button className="pp-back-btn" onClick={onBack}>
-            <BackIcon />
-          </button>
-          
-          <img 
-            className="pp-avatar" 
-            src="https://randomuser.me/api/portraits/women/44.jpg" 
-            alt="Patient Avatar" 
-          />
-          
-          <div className="pp-patient-info">
-            <div className="pp-name-row">
-              <h2 className="pp-name">{header.name}</h2>
-              <div className="pp-status">
-                <span className="pp-status-dot"></span>
-                {header.status}
-              </div>
-            </div>
-            
-            <div className="pp-details-row">
-              <span className="pp-badge">ID: {header.id}</span>
-              <span className="pp-badge">
-                <span className="pp-gender-icon">♀</span> {header.gender}
-              </span>
-              <span>{header.age}</span>
-              <span>Dob: {header.dob}</span>
-            </div>
-          </div>
-        </div>
-
-        <div className="pp-header-right">
+      <ChartHeader 
+        patientData={header}
+        onBack={onBack}
+        rightAction={
           <button 
             className="create-visit-btn" 
             onClick={handleCreateVisit}
             disabled={isCreatingVisit}
-            style={{ marginBottom: '16px', background: '#2563eb', color: 'white', padding: '10px 16px', borderRadius: '8px', border: 'none', fontWeight: 'bold', cursor: 'pointer' }}
+            style={{ background: '#2563eb', color: 'white', padding: '10px 16px', borderRadius: '8px', border: 'none', fontWeight: 'bold', cursor: 'pointer' }}
           >
             {isCreatingVisit ? 'Creating...' : '+ Create Visit'}
           </button>
-          
-          <div className="pp-metric">
-            <span className="pp-metric-label">Blood Group</span>
-            <span className="pp-metric-val red">{header.bloodGroup.value}</span>
-            <span className="pp-metric-date">{header.bloodGroup.date}</span>
-          </div>
-          <div className="pp-metric">
-            <span className="pp-metric-label">Height</span>
-            <span className="pp-metric-val">{header.height.value}</span>
-            <span className="pp-metric-date">{header.height.date}</span>
-          </div>
-          <div className="pp-metric">
-            <span className="pp-metric-label">Weight</span>
-            <span className="pp-metric-val">{header.weight.value}</span>
-            <span className="pp-metric-date">{header.weight.date}</span>
-          </div>
-          <div className="pp-metric">
-            <span className="pp-metric-label">BMI</span>
-            <span className="pp-metric-val red">{header.bmi.value}</span>
-            <span className="pp-metric-date">{header.bmi.date}</span>
-          </div>
-          <div className="pp-last-visit">
-            <span className="pp-metric-label">Last Visit</span>
-            <span className="pp-metric-val">{header.lastVisit}</span>
-          </div>
-        </div>
-      </div>
+        }
+      />
 
       {/* ALERTS & VITALS SECTION */}
       <div className="pp-alerts-vitals">
@@ -177,7 +124,11 @@ const PatientProfile = ({ patientId, appointmentId, onBack, onOpenNotes }) => {
           {vitals.map((v, idx) => (
             <div key={idx} className="pp-vital-item">
               <span className="pp-vital-label">{v.label}</span>
-              <span className="pp-vital-value">{v.value || '-'}</span>
+              <span className="pp-vital-value">
+                {v.value && !v.value.startsWith('--') 
+                  ? v.value 
+                  : (v.label === 'BP' ? '-- / --' : v.label === 'HR' ? '-- bpm' : v.label === 'SpO2' ? '--%' : v.label === 'Temp' ? '-- °C' : '-')}
+              </span>
               {v.unit && v.value && <span className="pp-vital-unit">{v.unit}</span>}
             </div>
           ))}

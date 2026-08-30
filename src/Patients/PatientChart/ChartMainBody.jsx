@@ -1,17 +1,27 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Mic, Edit2, Plus, Trash2, Calendar, FileSignature, Loader2 } from 'lucide-react';
+import { Mic, Edit2, Plus, Trash2, Calendar, FileSignature, Loader2, X } from 'lucide-react';
 import PatientChartAPI from '../API/patientChartAPI';
+import AddSymptomsModal from './AddSymptomsModal';
 
 const ChartMainBody = ({ patientId, appointmentId, encounterId, initialData }) => {
   const [isSaving, setIsSaving] = useState(false);
   const [formData, setFormData] = useState({
     reasonForVisit: '',
-    symptoms: '',
+    symptoms: [],
     examination: '',
-    diagnosis: '',
-    treatmentPlan: '',
+    assessments: [],
+    treatmentPlan: [],
     advice: ''
   });
+
+  const [isTreatmentModalOpen, setIsTreatmentModalOpen] = useState(false);
+  const [isAdviceModalOpen, setIsAdviceModalOpen] = useState(false);
+  const [recentAssessments, setRecentAssessments] = useState([]);
+  const [assessmentSearchQuery, setAssessmentSearchQuery] = useState('');
+  const [assessmentSearchResults, setAssessmentSearchResults] = useState([]);
+  const [showAssessmentDropdown, setShowAssessmentDropdown] = useState(false);
+
+  const [isSymptomsModalOpen, setIsSymptomsModalOpen] = useState(false);
 
   const [prescriptions, setPrescriptions] = useState([]);
 
@@ -32,24 +42,24 @@ const ChartMainBody = ({ patientId, appointmentId, encounterId, initialData }) =
   const [focusedRowIndex, setFocusedRowIndex] = useState(null);
 
   useEffect(() => {
-    PatientChartAPI.getMedications().then(res => {
-      setAvailableMedications(res.data);
-    }).catch(err => console.error("Failed to load medications:", err));
+    // Initial fetch of all medications removed.
+    // We now fetch via search API in the input onChange handler.
   }, []);
 
   useEffect(() => {
     if (initialData) {
       setFormData({
         reasonForVisit: initialData.reasonForVisit || '',
-        symptoms: initialData.symptoms || '',
-        examination: initialData.examination || '',
-        diagnosis: initialData.diagnosisTests || initialData.diagnosisNotes || '',
-        treatmentPlan: initialData.treatmentPlan || '',
+        symptoms: initialData.symptoms || [],
+        examination: initialData.examination ? initialData.examination.join('\n') : '',
+        assessments: initialData.assessments || [],
+        treatmentPlan: initialData.treatmentPlan || [],
         advice: initialData.advice || ''
       });
       if (initialData.prescriptions && initialData.prescriptions.length > 0) {
         setPrescriptions([
           ...initialData.prescriptions.map(p => ({
+            patientPrescriptionId: p.patientPrescriptionId,
             drugName: p.drugName,
             medicationId: p.medicationId,
             type: 'Medicine',
@@ -57,35 +67,57 @@ const ChartMainBody = ({ patientId, appointmentId, encounterId, initialData }) =
             dur: p.duration,
             inst: p.instruction
           })),
-          { drugName: '', medicationId: null, type: 'Medicine', freq: '0-0-0', dur: '', inst: '' }
+          { patientPrescriptionId: null, drugName: '', medicationId: null, type: 'Medicine', freq: '0-0-0', dur: '', inst: '' }
         ]);
-        setPrescriptions([{ drugName: '', medicationId: null, type: 'Medicine', freq: '0-0-0', dur: '', inst: '' }]);
+      } else {
+        setPrescriptions([{ patientPrescriptionId: null, drugName: '', medicationId: null, type: 'Medicine', freq: '0-0-0', dur: '', inst: '' }]);
       }
 
-      if (initialData.vitals && initialData.vitals.length > 0) {
-        setVitalsList(initialData.vitals.map((v, i) => ({
-          id: v.patientVitalsId || i,
-          header: v.vitalHeader,
-          data: v.vitalData,
-          isNew: false
-        })));
+      if (initialData.vitals && initialData.vitals.length > 0 && initialData.vitals[0].patientVitalData) {
+        const pvd = initialData.vitals[0].patientVitalData;
+        const allowedKeys = ['BP', 'HR', 'SpO2', 'Temp'];
+        setVitalsList(allowedKeys.map((key, i) => {
+          let val = '';
+          if (pvd[key]) {
+            val = pvd[key].value !== undefined ? pvd[key].value : pvd[key];
+          }
+          return {
+            id: 'v' + i,
+            header: key,
+            data: val,
+            isNew: false
+          };
+        }));
       } else {
         setVitalsList([
           { id: 'v1', header: 'BP', data: '', isNew: false },
           { id: 'v2', header: 'HR', data: '', isNew: false },
-          { id: 'v3', header: 'SpO₂', data: '', isNew: false },
+          { id: 'v3', header: 'SpO2', data: '', isNew: false },
           { id: 'v4', header: 'Temp', data: '', isNew: false }
         ]);
       }
     } else {
-      setPrescriptions([{ drugName: '', medicationId: null, type: 'Medicine', freq: '0-0-0', dur: '', inst: '' }]);
+      setPrescriptions([{ patientPrescriptionId: null, drugName: '', medicationId: null, type: 'Medicine', freq: '0-0-0', dur: '', inst: '' }]);
       setVitalsList([
         { id: 'v1', header: 'BP', data: '', isNew: false },
         { id: 'v2', header: 'HR', data: '', isNew: false },
-        { id: 'v3', header: 'SpO₂', data: '', isNew: false },
+        { id: 'v3', header: 'SpO2', data: '', isNew: false },
         { id: 'v4', header: 'Temp', data: '', isNew: false }
       ]);
     }
+
+    // Fetch recent assessments
+    const fetchRecent = async () => {
+      try {
+        const recentRes = await PatientChartAPI.getRecentAssessments();
+        if (recentRes.data && recentRes.data.status === 'SUCCESS') {
+          setRecentAssessments(recentRes.data.data);
+        }
+      } catch (err) {
+        console.error("Failed to fetch recent assessments:", err);
+      }
+    };
+    fetchRecent();
   }, [initialData]);
 
   const handlePrescriptionChange = (index, field, value) => {
@@ -98,7 +130,7 @@ const ChartMainBody = ({ patientId, appointmentId, encounterId, initialData }) =
           newP.pop();
         }
       } else if (index === newP.length - 1 && value.trim() !== '') {
-        newP.push({ drugName: '', medicationId: null, type: 'Medicine', freq: '0-0-0', dur: '', inst: '' });
+        newP.push({ patientPrescriptionId: null, drugName: '', medicationId: null, type: 'Medicine', freq: '0-0-0', dur: '', inst: '' });
       }
     }
     setPrescriptions(newP);
@@ -107,18 +139,68 @@ const ChartMainBody = ({ patientId, appointmentId, encounterId, initialData }) =
   const removePrescription = (index) => {
     let newP = prescriptions.filter((_, i) => i !== index);
     if (newP.length === 0 || newP[newP.length - 1].drugName.trim() !== '') {
-      newP.push({ drugName: '', medicationId: null, type: 'Medicine', freq: '0-0-0', dur: '', inst: '' });
+      newP.push({ patientPrescriptionId: null, drugName: '', medicationId: null, type: 'Medicine', freq: '0-0-0', dur: '', inst: '' });
     }
     setPrescriptions(newP);
+    handleUnifiedSave(formData, vitalsList, newP);
   };
 
   const handleFreqChange = (e, index) => {
     let val = e.target.value.replace(/[^0-9]/g, '');
     if (val.length > 3) val = val.slice(0, 3);
     let formatted = val.split('').join('-');
-    if (formatted === '') formatted = '0-0-0'; // Default to 0-0-0 if empty
-    handlePrescriptionChange(index, 'freq', formatted);
+
+    let newP = [...prescriptions];
+    newP[index].freq = formatted;
+    setPrescriptions(newP);
   };
+
+  const handleAssessmentSearchChange = async (e) => {
+    const val = e.target.value;
+    setAssessmentSearchQuery(val);
+    if (val.length >= 3) {
+      try {
+        const res = await PatientChartAPI.searchAssessments(val);
+        if (res.data && res.data.status === 'SUCCESS') {
+          setAssessmentSearchResults(res.data.data);
+          setShowAssessmentDropdown(true);
+        }
+      } catch (err) {
+        console.error("Failed to search assessments:", err);
+      }
+    } else {
+      setShowAssessmentDropdown(false);
+    }
+  };
+
+  const addAssessment = (assessmentName) => {
+    if (!formData.assessments.includes(assessmentName)) {
+      const newAssessments = [...formData.assessments, assessmentName];
+      const updatedFormData = { ...formData, assessments: newAssessments };
+      setFormData(updatedFormData);
+      handleUnifiedSave(updatedFormData, vitalsList, prescriptions);
+    }
+    setAssessmentSearchQuery('');
+    setShowAssessmentDropdown(false);
+  };
+
+  const removeAssessment = (index) => {
+    const newAssessments = formData.assessments.filter((_, i) => i !== index);
+    const updatedFormData = { ...formData, assessments: newAssessments };
+    setFormData(updatedFormData);
+    handleUnifiedSave(updatedFormData, vitalsList, prescriptions);
+  };
+
+  // Close dropdown on click outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (!event.target.closest('.assessment-container')) {
+        setShowAssessmentDropdown(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   const handleDurBlur = (e, index) => {
     let val = e.target.value.trim();
@@ -132,29 +214,63 @@ const ChartMainBody = ({ patientId, appointmentId, encounterId, initialData }) =
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleBlur = async (sectionName, content) => {
-    if (!encounterId) return;
+  const handleUnifiedSave = async (updatedFormData = formData, updatedVitals = vitalsList, updatedPrescriptions = prescriptions) => {
+    if (!encounterId && !appointmentId) return;
     try {
       setIsSaving(true);
-      await PatientChartAPI.autoSaveSection(encounterId, sectionName, content, patientId);
+
+      const pvd = {};
+      updatedVitals.forEach(v => {
+        if (v.header) pvd[v.header] = v.data;
+      });
+
+      const payload = {
+        patientVisitChartId: initialData?.patientVisitChartId,
+        patientId,
+        appointmentId,
+        encounterId,
+        reasonForVisit: updatedFormData.reasonForVisit,
+        symptoms: updatedFormData.symptoms,
+        examination: updatedFormData.examination.split('\n').filter(line => line.trim() !== ''),
+        assessments: updatedFormData.assessments,
+        treatmentPlan: updatedFormData.treatmentPlan,
+        advice: updatedFormData.advice,
+        vitals: [{ patientVitalData: pvd }],
+        prescriptions: updatedPrescriptions.map(p => ({
+          patientPrescriptionId: p.patientPrescriptionId,
+          drugName: p.drugName,
+          medicationId: p.medicationId,
+          frequency: p.freq,
+          duration: p.dur,
+          instruction: p.inst
+        }))
+      };
+
+      const res = await PatientChartAPI.saveChart(payload);
+
+      if (res.data && res.data.status === 'SUCCESS' && res.data.data?.prescriptions) {
+        const savedPrescriptions = res.data.data.prescriptions;
+        setPrescriptions(prev => {
+          return prev.map(p => {
+            if (!p.patientPrescriptionId && p.drugName) {
+              const matched = savedPrescriptions.find(sp => sp.drugName === p.drugName && sp.medicationId === p.medicationId);
+              if (matched) {
+                return { ...p, patientPrescriptionId: matched.patientPrescriptionId };
+              }
+            }
+            return p;
+          });
+        });
+      }
     } catch (error) {
-      console.error(`Failed to auto-save ${sectionName}:`, error);
+      console.error("Failed to auto-save chart:", error);
     } finally {
       setIsSaving(false);
     }
   };
 
-  const handleSaveVitals = async (currentVitalsList) => {
-    if (!encounterId) return;
-    try {
-      setIsSaving(true);
-      const payload = currentVitalsList.map(v => ({ vitalHeader: v.header, vitalData: v.data }));
-      await PatientChartAPI.saveVitals(encounterId, payload);
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setIsSaving(false);
-    }
+  const handleBlur = () => {
+    handleUnifiedSave();
   };
 
   const handleVitalBlur = (id) => {
@@ -164,7 +280,7 @@ const ChartMainBody = ({ patientId, appointmentId, encounterId, initialData }) =
       updatedList = prev.map(v => v.id === id ? { ...v, isNew: false } : v);
       return updatedList;
     });
-    setTimeout(() => handleSaveVitals(updatedList), 0);
+    setTimeout(() => handleUnifiedSave(formData, updatedList, prescriptions), 0);
   };
 
   const handleNewVitalBlur = () => {
@@ -172,7 +288,7 @@ const ChartMainBody = ({ patientId, appointmentId, encounterId, initialData }) =
       const newId = 'new_' + Date.now();
       const newList = [...vitalsList, { id: newId, header: newVitalHeader, data: newVitalData, isNew: false }];
       setVitalsList(newList);
-      handleSaveVitals(newList);
+      handleUnifiedSave(formData, newList, prescriptions);
     }
     setIsAddingVital(false);
     setNewVitalHeader('');
@@ -201,7 +317,7 @@ const ChartMainBody = ({ patientId, appointmentId, encounterId, initialData }) =
             setFormData(prev => ({
               ...prev,
               reasonForVisit: aiData.reasonForVisit || prev.reasonForVisit,
-              symptoms: aiData.symptoms || prev.symptoms,
+              symptoms: aiData.symptoms ? (Array.isArray(aiData.symptoms) ? aiData.symptoms : [aiData.symptoms]) : prev.symptoms,
               examination: aiData.examination || prev.examination,
               treatmentPlan: aiData.treatmentPlan || prev.treatmentPlan,
               diagnosis: aiData.diagnosis || prev.diagnosis
@@ -245,19 +361,19 @@ const ChartMainBody = ({ patientId, appointmentId, encounterId, initialData }) =
   const v = initialData?.vitals || {};
 
   return (
-    <div className="flex-1 flex flex-col bg-white rounded-xl border border-gray-100 shadow-sm overflow-y-auto min-h-0">
-      <div className="p-6 flex items-center justify-between">
-        <span className="text-xl font-semibold text-gray-900">Today’s Visit</span>
+    <div className="flex-1 flex flex-col bg-white overflow-y-auto min-h-0">
+      <div className="p-8 flex items-center justify-between">
+        <span className="text-2xl font-semibold text-gray-900">Today’s Visit</span>
       </div>
 
-      <div className="mx-6 bg-blue-50 border border-blue-200 rounded-xl px-5 py-4 flex justify-between items-center">
+      <div className="mx-8 bg-blue-50 border border-blue-200 rounded-xl px-5 py-4 flex justify-between items-center">
         <div className="flex items-center gap-4">
-          <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center text-blue-500 shadow-sm">
-            <Mic size={20} />
+          <div className="w-12 h-12 rounded-full bg-white flex items-center justify-center text-blue-500 shadow-sm">
+            <Mic size={24} />
           </div>
           <div className="flex flex-col gap-1">
-            <span className="text-base font-semibold text-gray-900">Ambient Scribe {isRecording ? 'Recording...' : (isProcessing ? 'Processing...' : 'Ready')}</span>
-            <span className="text-sm text-gray-500">{isRecording ? 'Listening to conversation...' : (isProcessing ? 'AI is structuring notes...' : 'Tap to begin — ')} <span className="text-blue-500">Notes auto-populate</span></span>
+            <span className="text-lg font-semibold text-gray-900">Ambient Scribe {isRecording ? 'Recording...' : (isProcessing ? 'Processing...' : 'Ready')}</span>
+            <span className="text-base text-gray-500">{isRecording ? 'Listening to conversation...' : (isProcessing ? 'AI is structuring notes...' : 'Tap to begin — ')} <span className="text-blue-500">Notes auto-populate</span></span>
           </div>
         </div>
         {isProcessing ? (
@@ -275,23 +391,24 @@ const ChartMainBody = ({ patientId, appointmentId, encounterId, initialData }) =
         )}
       </div>
 
-      <div className="text-lg font-semibold text-gray-900 pt-6 px-6 pb-4 flex justify-between items-center shrink-0">Vitals</div>
-      <div className="flex overflow-x-auto gap-4 px-6 py-2 pb-6 border-b border-gray-100 items-stretch shrink-0" style={{ scrollbarWidth: 'thin', minHeight: '130px' }}>
+      <div className="text-xl font-semibold text-gray-900 pt-8 px-8 pb-4 flex justify-between items-center shrink-0">Vitals</div>
+      <div className="px-8 pb-8 border-b border-gray-100 shrink-0">
+        <div className="flex overflow-x-auto gap-4 py-2 items-stretch" style={{ scrollbarWidth: 'thin', minHeight: '130px' }}>
         {vitalsList.map(v => (
-          <div key={v.id} className="border border-gray-200 rounded-xl p-4 flex flex-col justify-between relative bg-gray-50 shrink-0 w-[170px] min-h-[100px]">
-            <div className="flex justify-between items-center text-sm text-gray-500 font-semibold mb-3">
+          <div key={v.id} className="border border-gray-200 rounded-xl p-4 flex flex-col justify-between relative bg-gray-50 shrink-0 w-[180px] min-h-[110px]">
+            <div className="flex justify-between items-center text-base text-gray-500 font-semibold mb-3">
               {v.isNew && editingVital === v.id ? (
                 <input
                   type="text"
                   value={v.header}
                   onChange={(e) => setVitalsList(prev => prev.map(item => item.id === v.id ? { ...item, header: e.target.value } : item))}
-                  className="bg-white border border-gray-300 rounded px-2 py-1 text-sm w-full font-semibold outline-none focus:border-blue-500"
+                  className="bg-white border border-gray-300 rounded px-2 py-1 text-base w-full font-semibold outline-none focus:border-blue-500"
                   placeholder="Vital Name"
                 />
               ) : (
                 <>
                   {v.header}
-                  <Edit2 size={14} className="text-gray-400 cursor-pointer hover:text-gray-600" onClick={() => setEditingVital(v.id)} />
+                  <Edit2 size={16} className="text-gray-400 cursor-pointer hover:text-gray-600" onClick={() => setEditingVital(v.id)} />
                 </>
               )}
             </div>
@@ -300,15 +417,17 @@ const ChartMainBody = ({ patientId, appointmentId, encounterId, initialData }) =
                 <input
                   autoFocus
                   type="text"
-                  value={v.data}
+                  value={v.data && v.data.startsWith('--') ? '' : v.data}
                   onChange={(e) => setVitalsList(prev => prev.map(item => item.id === v.id ? { ...item, data: e.target.value } : item))}
                   onBlur={() => handleVitalBlur(v.id)}
                   onKeyDown={(e) => e.key === 'Enter' && handleVitalBlur(v.id)}
-                  className="bg-white border border-gray-300 rounded px-2 py-1 text-sm w-full font-bold outline-none focus:border-blue-500"
-                  placeholder="Value"
+                  className="bg-white border border-gray-300 rounded px-2 py-1 text-base w-full font-bold outline-none focus:border-blue-500"
+                  placeholder={v.header === 'BP' ? '-- / --' : v.header === 'HR' ? '-- bpm' : v.header === 'SpO2' ? '--%' : v.header === 'Temp' ? '-- °C' : 'Value'}
                 />
               ) : (
-                <span className="text-lg font-bold text-gray-900">{v.data || '-'}</span>
+                <span className="text-xl font-bold text-gray-900">
+                  {v.data && !v.data.startsWith('--') ? v.data : (v.header === 'BP' ? '-- / --' : v.header === 'HR' ? '-- bpm' : v.header === 'SpO2' ? '--%' : v.header === 'Temp' ? '-- °C' : '-')}
+                </span>
               )}
             </div>
           </div>
@@ -347,66 +466,146 @@ const ChartMainBody = ({ patientId, appointmentId, encounterId, initialData }) =
             <Plus size={20} /> Add
           </div>
         )}
+        </div>
       </div>
 
-      <div className="flex p-6 gap-6 border-b border-gray-100">
+      <div className="flex p-8 gap-6 border-b border-gray-100">
         <div className="flex-1 flex flex-col">
           <div className="flex items-center gap-2 mb-3">
-            <span className="text-base font-semibold text-gray-900">Reason for Visit</span>
-            <span className="text-sm text-gray-400">— Entered by: James</span>
+            <span className="text-lg font-semibold text-gray-900">Reason for Visit</span>
+            <span className="text-base text-gray-400">— Entered by: {initialData?.enteredBy || 'Unknown'}</span>
           </div>
           <textarea
-            className="w-full border border-gray-200 rounded-xl p-4 text-sm font-inherit resize-y min-h-[100px] outline-none box-border focus:border-blue-500 transition-colors bg-gray-50"
+            className="w-full border border-gray-200 rounded-xl p-4 text-base font-inherit resize-y min-h-[110px] outline-none box-border focus:border-blue-500 transition-colors bg-white shadow-sm"
             name="reasonForVisit"
             value={formData.reasonForVisit}
             onChange={handleChange}
-            onBlur={() => handleBlur('reasonForVisit', formData.reasonForVisit)}
+            onBlur={() => handleUnifiedSave(formData, vitalsList, prescriptions)}
+            placeholder="No reason for visit recorded. Click to enter..."
           />
         </div>
 
         <div className="flex-1 flex flex-col">
           <div className="flex items-center justify-between w-full mb-3">
-            <span className="text-base font-semibold text-gray-900">Symptoms</span>
-            <span className="text-sm text-blue-500 cursor-pointer hover:text-blue-600">+ Add / Edit</span>
+            <span className="text-lg font-semibold text-gray-900">Symptoms</span>
+            <span className="text-base text-blue-500 cursor-pointer hover:text-blue-600 font-medium" onClick={() => setIsSymptomsModalOpen(true)}>+ Add / Edit</span>
           </div>
-          <textarea
-            className="w-full border border-gray-200 rounded-xl p-4 text-sm font-inherit resize-y min-h-[100px] outline-none box-border focus:border-blue-500 transition-colors bg-gray-50"
-            name="symptoms"
-            value={formData.symptoms}
-            onChange={handleChange}
-            onBlur={() => handleBlur('symptoms', formData.symptoms)}
-          />
+          {(!formData.symptoms || formData.symptoms.length === 0) ? (
+            <div
+              className="w-full border border-dashed border-gray-300 rounded-xl p-6 min-h-[110px] bg-gray-50 flex flex-col items-center justify-center cursor-pointer hover:bg-gray-100 transition-colors"
+              onClick={() => setIsSymptomsModalOpen(true)}
+            >
+              <Plus size={24} className="mb-2 text-gray-400" />
+              <span className="text-base font-medium text-gray-500">No symptoms recorded</span>
+              <span className="text-sm text-blue-500 mt-1">Click to add symptoms</span>
+            </div>
+          ) : (
+            <div className="w-full border border-gray-200 rounded-xl p-4 min-h-[110px] bg-white shadow-sm flex flex-wrap gap-3 items-start content-start">
+              {(Array.isArray(formData.symptoms) ? formData.symptoms : []).map((sym, idx) => (
+                <div key={idx} className="relative group flex items-center bg-blue-50 border border-blue-100 text-gray-800 px-4 py-2 rounded-full text-base font-medium shadow-sm">
+                  {sym}
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      const newSymptoms = formData.symptoms.filter((_, i) => i !== idx);
+                      const updatedFormData = { ...formData, symptoms: newSymptoms };
+                      setFormData(updatedFormData);
+                      handleUnifiedSave(updatedFormData, vitalsList, prescriptions);
+                    }}
+                    className="absolute -top-1.5 -right-1.5 bg-white border border-gray-200 text-gray-500 rounded-full w-6 h-6 flex items-center justify-center opacity-0 group-hover:opacity-100 cursor-pointer shadow hover:text-red-500 hover:border-red-200 transition-all"
+                    title="Remove"
+                  >
+                    <X size={14} />
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
 
-      <div className="p-6 border-b border-gray-100 flex flex-col">
+      <div className="p-8 border-b border-gray-100 flex flex-col">
         <div className="flex items-center gap-2 mb-3">
-          <span className="text-base font-semibold text-gray-900">Examination</span>
-          <span className="text-sm text-gray-400">— Objective — clinical findings</span>
+          <span className="text-lg font-semibold text-gray-900">Examination</span>
+          <span className="text-base text-gray-400">— Objective — clinical findings</span>
         </div>
         <textarea
-          className="w-full border border-gray-200 rounded-xl p-4 text-sm font-inherit resize-y min-h-[100px] outline-none box-border focus:border-blue-500 transition-colors bg-gray-50"
+          className="w-full border border-gray-200 rounded-xl p-4 text-base font-inherit resize-y min-h-[110px] outline-none box-border focus:border-blue-500 transition-colors bg-white shadow-sm"
           name="examination"
           value={formData.examination}
           onChange={handleChange}
-          onBlur={() => handleBlur('examination', formData.examination)}
-          placeholder="Enter the examination of the patient"
+          onBlur={() => handleUnifiedSave(formData, vitalsList, prescriptions)}
+          placeholder="No clinical findings recorded. Click to enter examination..."
         />
       </div>
 
-      <div className="p-6 border-b border-gray-100 flex flex-col">
+      <div className="p-8 border-b border-gray-100 flex flex-col">
         <div className="flex items-center gap-2 mb-3">
           <span className="text-base font-semibold text-gray-900">Diagnosis</span>
           <span className="text-sm text-gray-400">— Assessments</span>
         </div>
-        <textarea
-          className="w-full border border-gray-200 rounded-xl p-4 text-sm font-inherit resize-y min-h-[100px] outline-none box-border focus:border-blue-500 transition-colors bg-gray-50"
-          name="diagnosis"
-          value={formData.diagnosis}
-          onChange={handleChange}
-          onBlur={() => handleBlur('diagnosis', formData.diagnosis)}
-          placeholder="Search for assessments or tests..."
-        />
+        <div className="flex flex-col gap-3 assessment-container">
+          {recentAssessments.length > 0 && (
+            <div className="flex flex-wrap gap-2 mb-2">
+              <span className="text-xs text-gray-500 font-medium py-1">Recently Used:</span>
+              {recentAssessments.map((ra) => (
+                <button
+                  key={ra.id}
+                  onClick={() => addAssessment(ra.name)}
+                  className="px-2 py-1 bg-gray-100 hover:bg-blue-50 text-gray-600 hover:text-blue-600 text-xs rounded-full border border-gray-200 transition-colors cursor-pointer whitespace-nowrap"
+                >
+                  {ra.name}
+                </button>
+              ))}
+            </div>
+          )}
+
+          <div className="relative">
+            <input
+              type="text"
+              className="w-full border border-gray-200 rounded-xl p-3 text-sm font-inherit outline-none box-border focus:border-blue-500 transition-colors bg-white shadow-sm"
+              value={assessmentSearchQuery}
+              onChange={handleAssessmentSearchChange}
+              placeholder="Search for assessments or diagnoses..."
+              onFocus={() => {
+                if (assessmentSearchQuery.length >= 3) setShowAssessmentDropdown(true);
+              }}
+            />
+
+            {showAssessmentDropdown && assessmentSearchResults.length > 0 && (
+              <div className="absolute z-50 w-full left-0 top-full bg-white border border-gray-100 rounded-xl shadow-[0_8px_30px_rgb(0,0,0,0.08)] max-h-56 overflow-y-auto mt-2 p-2">
+                {assessmentSearchResults.map((result) => (
+                  <div
+                    key={result.id}
+                    className="p-3 text-sm text-gray-700 cursor-pointer rounded-lg hover:bg-blue-50 hover:text-gray-900 transition-colors mb-1 last:mb-0"
+                    onMouseDown={(e) => {
+                      e.preventDefault();
+                      addAssessment(result.name);
+                    }}
+                  >
+                    {result.name}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {formData.assessments.length > 0 && (
+            <div className="flex flex-wrap gap-2 mt-2">
+              {formData.assessments.map((assessment, idx) => (
+                <div key={idx} className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 text-blue-700 rounded-full border border-blue-100 text-sm shadow-sm group">
+                  <span>{assessment}</span>
+                  <button
+                    onClick={() => removeAssessment(idx)}
+                    className="text-blue-400 hover:text-red-500 hover:bg-white rounded-full p-0.5 transition-colors focus:outline-none"
+                  >
+                    <X size={14} />
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
 
       <div className="p-6 border-b border-gray-100 flex flex-col">
@@ -428,18 +627,29 @@ const ChartMainBody = ({ patientId, appointmentId, encounterId, initialData }) =
             </thead>
             <tbody>
               {prescriptions.map((med, i) => (
-                <tr key={i} className="border-b border-gray-100 last:border-b-0 group">
-                  <td className="p-4 align-top relative">
+                <tr key={i} className="border-b border-gray-100 last:border-b-0 group relative">
+                  <td className="p-4 align-top">
                     <input
                       type="text"
                       className="bg-transparent border-none outline-none w-full text-sm font-semibold text-gray-900 placeholder-gray-400"
                       value={med.drugName || ""}
                       placeholder="Type medication name..."
                       onChange={(e) => {
-                        handlePrescriptionChange(i, 'drugName', e.target.value);
+                        const val = e.target.value;
+                        handlePrescriptionChange(i, 'drugName', val);
                         handlePrescriptionChange(i, 'medicationId', null);
+                        if (val.length >= 3) {
+                          PatientChartAPI.searchMedications(val).then(res => setAvailableMedications(res.data?.data || [])).catch(err => console.error("Search failed:", err));
+                        } else {
+                          setAvailableMedications([]);
+                        }
                       }}
-                      onFocus={() => setFocusedRowIndex(i)}
+                      onFocus={() => {
+                        setFocusedRowIndex(i);
+                        if (med.drugName && med.drugName.length >= 3) {
+                          PatientChartAPI.searchMedications(med.drugName).then(res => setAvailableMedications(res.data?.data || [])).catch(err => console.error(err));
+                        }
+                      }}
                       onBlur={() => setTimeout(() => setFocusedRowIndex(null), 200)}
                     />
                     {med.drugName && <span className="block text-xs text-gray-400 mt-0.5">{med.type || 'Medicine'}</span>}
@@ -468,6 +678,7 @@ const ChartMainBody = ({ patientId, appointmentId, encounterId, initialData }) =
                         value={med.freq || ""}
                         placeholder="e.g. 1-0-1"
                         onChange={(e) => handleFreqChange(e, i)}
+                        onBlur={() => handleUnifiedSave(formData, vitalsList, prescriptions)}
                       />
                       <svg width="10" height="6" viewBox="0 0 10 6" fill="none" xmlns="http://www.w3.org/2000/svg" className="ml-2 flex-shrink-0">
                         <path d="M1 1L5 5L9 1" stroke="#6B7280" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
@@ -482,7 +693,7 @@ const ChartMainBody = ({ patientId, appointmentId, encounterId, initialData }) =
                         value={med.dur || ""}
                         placeholder="e.g. 5 days"
                         onChange={(e) => handlePrescriptionChange(i, 'dur', e.target.value)}
-                        onBlur={(e) => handleDurBlur(e, i)}
+                        onBlur={() => handleUnifiedSave(formData, vitalsList, prescriptions)}
                       />
                       <div className="flex flex-col ml-2 gap-[2px] flex-shrink-0">
                         <svg width="8" height="5" viewBox="0 0 10 6" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -501,6 +712,7 @@ const ChartMainBody = ({ patientId, appointmentId, encounterId, initialData }) =
                       value={med.inst || ""}
                       placeholder="e.g. After food"
                       onChange={(e) => handlePrescriptionChange(i, 'inst', e.target.value)}
+                      onBlur={() => handleUnifiedSave(formData, vitalsList, prescriptions)}
                     />
                   </td>
                   <td className="p-4 text-center align-middle">
@@ -529,7 +741,7 @@ const ChartMainBody = ({ patientId, appointmentId, encounterId, initialData }) =
           name="treatmentPlan"
           value={formData.treatmentPlan}
           onChange={handleChange}
-          onBlur={() => handleBlur('treatmentPlan', formData.treatmentPlan)}
+          onBlur={() => handleUnifiedSave(formData, vitalsList, prescriptions)}
           placeholder="Enter the Treatment plan for the patient"
         />
       </div>
@@ -544,7 +756,7 @@ const ChartMainBody = ({ patientId, appointmentId, encounterId, initialData }) =
           name="advice"
           value={formData.advice}
           onChange={handleChange}
-          onBlur={() => handleBlur('advice', formData.advice)}
+          onBlur={() => handleBlur()}
           placeholder="Enter the Advice for the patient"
         />
       </div>
@@ -579,6 +791,17 @@ const ChartMainBody = ({ patientId, appointmentId, encounterId, initialData }) =
           </button>
         </div>
       </div>
+
+      <AddSymptomsModal
+        isOpen={isSymptomsModalOpen}
+        onClose={() => setIsSymptomsModalOpen(false)}
+        symptoms={formData.symptoms}
+        onSave={(newSymptoms) => {
+          const updatedFormData = { ...formData, symptoms: newSymptoms };
+          setFormData(updatedFormData);
+          handleUnifiedSave(updatedFormData, vitalsList, prescriptions);
+        }}
+      />
     </div>
   );
 };

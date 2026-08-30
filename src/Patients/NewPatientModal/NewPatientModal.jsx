@@ -327,42 +327,6 @@ const NewPatientModal = ({ onClose, onSuccess, onError }) => {
                     onChange={(e) => handleChange("location", e.target.value)}
                   />
                 </div>
-                <div className="npm-field">
-                  <label><User /> Height (cm)</label>
-                  <input
-                    type="text"
-                    placeholder="170 cm"
-                    value={formData.height}
-                    onChange={(e) => handleChange("height", e.target.value)}
-                  />
-                </div>
-                <div className="npm-field">
-                  <label><User /> Weight (kg)</label>
-                  <input
-                    type="text"
-                    placeholder="70 kg"
-                    value={formData.weight}
-                    onChange={(e) => handleChange("weight", e.target.value)}
-                  />
-                </div>
-                <div className="npm-field">
-                  <label><User /> BMI</label>
-                  <input
-                    type="text"
-                    placeholder="24.2"
-                    value={formData.bmi}
-                    onChange={(e) => handleChange("bmi", e.target.value)}
-                  />
-                </div>
-                <div className="npm-field">
-                  <label><User /> Blood Group</label>
-                  <Dropdown
-                    options={BLOOD_GROUP_OPTIONS}
-                    value={formData.bloodGroup}
-                    onChange={(v) => handleChange("bloodGroup", v)}
-                    placeholder="Select Blood Group"
-                  />
-                </div>
               </div>
             </div>
 

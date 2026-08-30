@@ -106,7 +106,8 @@
 }
 
 .pp-gender-icon {
-  color: #E6198C; /* Pink for female in reference */
+  color: #E6198C;
+  /* Pink for female in reference */
 }
 
 .pp-header-right {
@@ -132,7 +133,10 @@
   color: #101828;
 }
 
-.pp-metric-val.red { color: #D92D20; }
+.pp-metric-val.red {
+  color: #D92D20;
+}
+
 .pp-metric-date {
   font-size: 10px;
   color: #98A2B3;
@@ -364,8 +368,15 @@
   min-width: 100px;
 }
 
-.text-red { color: #D92D20; font-weight: 500; }
-.text-orange { color: #DC6803; font-weight: 500; }
+.text-red {
+  color: #D92D20;
+  font-weight: 500;
+}
+
+.text-orange {
+  color: #DC6803;
+  font-weight: 500;
+}
 
 /* CLINICAL JOURNEY CARDS */
 .pp-journey-grid {
@@ -394,9 +405,20 @@
   justify-content: center;
 }
 
-.pp-journey-icon.blue { background: #F0F9FF; color: #026AA2; }
-.pp-journey-icon.green { background: #ECFDF3; color: #027A48; }
-.pp-journey-icon.red { background: #FEF3F2; color: #B42318; }
+.pp-journey-icon.blue {
+  background: #F0F9FF;
+  color: #026AA2;
+}
+
+.pp-journey-icon.green {
+  background: #ECFDF3;
+  color: #027A48;
+}
+
+.pp-journey-icon.red {
+  background: #FEF3F2;
+  color: #B42318;
+}
 
 .pp-journey-details {
   display: flex;

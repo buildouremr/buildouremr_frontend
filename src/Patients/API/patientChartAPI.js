@@ -2,22 +2,24 @@ import axiosInstance from "../../utils/useAPIClient";
 
 const PatientChartAPI = {
   // Get patient snapshot (demographics, allergies, chronic conditions, risk factors)
-  getPatientSnapshot: (patientId) => {
-    return axiosInstance.get(`/patient-chart/${patientId}/snapshot`);
+  getPatientSnapshot: (patientId, encounterId) => {
+    let url = `/patient-chart/${patientId}/snapshot`;
+    if (encounterId) {
+      url += `?encounterId=${encounterId}`;
+    }
+    return axiosInstance.get(url);
   },
 
   getPatientProfile: (patientId) => {
     return axiosInstance.get(`/patient-chart/${patientId}/profile`);
   },
 
-  // Auto save section
-  autoSaveSection: (encounterId, sectionName, content, patientId) => {
-    return axiosInstance.patch(`/patient-chart/encounter/${encounterId}/section/${sectionName}`, { content, patientId });
+  getPatientHeader: (patientId) => {
+    return axiosInstance.get(`/patient-chart/${patientId}/header`);
   },
 
-  // Save vitals array
-  saveVitals: (encounterId, vitalsArray) => {
-    return axiosInstance.patch(`/patient-chart/encounter/${encounterId}/vitals`, vitalsArray);
+  getChartByEncounter: (patientId, encounterId) => {
+    return axiosInstance.get(`/patient-chart/encounter/${encounterId}?patientId=${patientId}`);
   },
 
   // Sign Encounter
@@ -30,9 +32,9 @@ const PatientChartAPI = {
     return axiosInstance.get(`/patient-chart/appointment/${appointmentId}`);
   },
 
-  // Save chart as draft
-  saveDraft: (chartData) => {
-    return axiosInstance.post(`/patient-chart/draft`, chartData);
+  // Save chart
+  saveChart: (chartData) => {
+    return axiosInstance.post(`/patient-chart/save`, chartData);
   },
 
   // Submit chart
@@ -51,9 +53,24 @@ const PatientChartAPI = {
     });
   },
 
-  // Get medications
+  // Get all medications
   getMedications: () => {
-    return axiosInstance.get('/medications');
+    return axiosInstance.get('/medications/all');
+  },
+
+  // Search medications
+  searchMedications: (keyword) => {
+    return axiosInstance.get(`/medications/search?keyword=${encodeURIComponent(keyword)}`);
+  },
+
+  // Search assessments
+  searchAssessments: (keyword) => {
+    return axiosInstance.get(`/assessments/search?keyword=${encodeURIComponent(keyword)}`);
+  },
+
+  // Get recent assessments
+  getRecentAssessments: () => {
+    return axiosInstance.get('/assessments/recent');
   }
 };
 

@@ -1,8 +1,16 @@
 import React from 'react';
 import { ArrowLeft } from 'lucide-react';
 
-const ChartHeader = ({ patientData, onBack }) => {
+const ChartHeader = ({ patientData, onBack, rightAction }) => {
   if (!patientData) return null;
+
+  const formatDate = (dateStr) => {
+    if (!dateStr || dateStr === '-') return '-';
+    const d = new Date(dateStr);
+    if (isNaN(d)) return dateStr;
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    return `${String(d.getDate()).padStart(2, '0')} ${months[d.getMonth()]} ${d.getFullYear()}`;
+  };
 
   return (
     <div className="flex justify-between items-center px-6 py-4 bg-white border-b border-gray-100 shadow-sm">
@@ -25,39 +33,49 @@ const ChartHeader = ({ patientData, onBack }) => {
               <span className="text-xl font-semibold text-gray-900">{patientData.name}</span>
               <span className="flex items-center gap-1.5 text-xs text-green-700 bg-green-100 px-2 py-0.5 rounded-full font-medium">● Stable</span>
             </div>
-            <div className="flex items-center gap-3 text-sm text-gray-500">
-              <span>{patientData.gender}</span>
-              <span className="text-gray-300">•</span>
-              <span>{patientData.age} Years</span>
-              <span className="text-gray-300">•</span>
-              <span>DOB: {patientData.dob}</span>
-              <span className="text-gray-300">•</span>
-              <span>ID: PT-9021</span>
+            <div className="flex items-center gap-2 mt-1">
+              <span className="flex items-center gap-1 bg-gray-100 text-gray-700 px-2.5 py-1 rounded-md text-xs font-medium">
+                ID: {patientData.id || "-"}
+              </span>
+              <span className={`flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-medium ${patientData.gender === 'F' ? 'bg-pink-50 text-pink-600' : 'bg-blue-50 text-blue-600'}`}>
+                {patientData.gender === 'F' ? '♀ Female' : patientData.gender === 'M' ? '♂ Male' : patientData.gender}
+              </span>
+              <span className="flex items-center gap-1 bg-gray-100 text-gray-700 px-2.5 py-1 rounded-md text-xs font-medium">
+                {String(patientData.age).replace(/\s*(years?|yrs?)\s*$/i, '').trim()} yrs
+              </span>
+              <span className="flex items-center gap-1 bg-gray-100 text-gray-700 px-2.5 py-1 rounded-md text-xs font-medium">
+                Dob: {formatDate(patientData.dob)}
+              </span>
             </div>
           </div>
         </div>
       </div>
       
       <div className="flex items-center gap-6">
-        <div className="flex flex-col items-center gap-1">
+        {rightAction && <div className="mr-4">{rightAction}</div>}
+        <div className="flex flex-col items-center justify-center gap-1">
           <span className="text-xs text-gray-400">Blood Group</span>
-          <span className="text-base font-semibold text-red-500">{patientData.bloodGroup}</span>
+          <span className="text-base font-semibold text-red-500">{patientData.bloodGroup?.value || "-"}</span>
+          <span className="text-[10px] text-gray-400">{patientData.bloodGroup?.date !== "-" ? patientData.bloodGroup?.date : ""}</span>
         </div>
         <div className="flex flex-col items-center gap-1">
           <span className="text-xs text-gray-400">Height</span>
-          <span className="text-base font-semibold text-gray-900">{patientData.height}</span>
+          <span className="text-base font-semibold text-gray-900">{patientData.height?.value || "-"}</span>
+          <span className="text-[10px] text-gray-400">{patientData.height?.date !== "-" ? patientData.height?.date : ""}</span>
         </div>
         <div className="flex flex-col items-center gap-1">
           <span className="text-xs text-gray-400">Weight</span>
-          <span className="text-base font-semibold text-gray-900">{patientData.weight}</span>
+          <span className="text-base font-semibold text-gray-900">{patientData.weight?.value || "-"}</span>
+          <span className="text-[10px] text-gray-400">{patientData.weight?.date !== "-" ? patientData.weight?.date : ""}</span>
         </div>
         <div className="flex flex-col items-center gap-1">
           <span className="text-xs text-gray-400">BMI</span>
-          <span className="text-base font-semibold text-red-500">{patientData.bmi}</span>
+          <span className="text-base font-semibold text-red-500">{patientData.bmi?.value || "-"}</span>
+          <span className="text-[10px] text-gray-400">{patientData.bmi?.date !== "-" ? patientData.bmi?.date : ""}</span>
         </div>
-        <div className="flex flex-col items-center gap-1">
+        <div className="flex flex-col items-center justify-center gap-1 border-l border-gray-200 pl-6 h-full">
           <span className="text-xs text-gray-400">Last Visit</span>
-          <span className="text-base font-semibold text-gray-900">{patientData.lastVisit || "12 July 2026"}</span>
+          <span className="text-base font-semibold text-gray-900">{patientData.lastVisit || "-"}</span>
         </div>
       </div>
     </div>
