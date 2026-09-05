@@ -52,7 +52,6 @@ const ChartHeader = ({ patientData, onBack, rightAction }) => {
       </div>
       
       <div className="flex items-center gap-6">
-        {rightAction && <div className="mr-4">{rightAction}</div>}
         <div className="flex flex-col items-center justify-center gap-1">
           <span className="text-xs text-gray-400">Blood Group</span>
           <span className="text-base font-semibold text-red-500">{patientData.bloodGroup?.value || "-"}</span>
@@ -73,10 +72,11 @@ const ChartHeader = ({ patientData, onBack, rightAction }) => {
           <span className="text-base font-semibold text-red-500">{patientData.bmi?.value || "-"}</span>
           <span className="text-[10px] text-gray-400">{patientData.bmi?.date !== "-" ? patientData.bmi?.date : ""}</span>
         </div>
-        <div className="flex flex-col items-center justify-center gap-1 border-l border-gray-200 pl-6 h-full">
+        <div className="flex flex-col items-center justify-center gap-1 border-l border-gray-200 pl-6 h-full mr-4">
           <span className="text-xs text-gray-400">Last Visit</span>
           <span className="text-base font-semibold text-gray-900">{patientData.lastVisit || "-"}</span>
         </div>
+        {rightAction && <div>{rightAction}</div>}
       </div>
     </div>
   );

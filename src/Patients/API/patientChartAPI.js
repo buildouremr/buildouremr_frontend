@@ -23,8 +23,12 @@ const PatientChartAPI = {
   },
 
   // Sign Encounter
-  signEncounter: (encounterId) => {
-    return axiosInstance.post(`/encounters/${encounterId}/sign`);
+  signEncounter: (encounterId, noteName) => {
+    let url = `/encounters/${encounterId}/sign`;
+    if (noteName) {
+      url += `?noteName=${encodeURIComponent(noteName)}`;
+    }
+    return axiosInstance.post(url);
   },
 
   // Get active chart for an appointment
@@ -71,6 +75,16 @@ const PatientChartAPI = {
   // Get recent assessments
   getRecentAssessments: () => {
     return axiosInstance.get('/assessments/recent');
+  },
+
+  // Save patient allergies
+  savePatientAllergies: (patientId, allergiesData) => {
+    return axiosInstance.post(`/patient-chart/patient/${patientId}/allergies`, allergiesData);
+  },
+
+  // Save patient chronic conditions
+  savePatientChronicConditions: (patientId, conditionsData) => {
+    return axiosInstance.post(`/patient-chart/patient/${patientId}/chronic-conditions`, conditionsData);
   }
 };
 

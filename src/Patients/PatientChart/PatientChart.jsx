@@ -3,6 +3,8 @@ import ChartHeader from './ChartHeader';
 import ChartLeftSidebar from './ChartLeftSidebar';
 import ChartMainBody from './ChartMainBody';
 import ChartRightSidebar from './ChartRightSidebar';
+import AddAllergiesModal from './AddAllergiesModal';
+import AddChronicConditionsModal from './AddChronicConditionsModal';
 
 import PatientChartAPI from '../API/patientChartAPI';
 
@@ -10,6 +12,19 @@ const PatientChart = ({ patientId, appointmentId, encounterId, onBack }) => {
   const [patientData, setPatientData] = useState(null);
   const [chartData, setChartData] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [isAllergiesModalOpen, setIsAllergiesModalOpen] = useState(false);
+  const [isChronicConditionsModalOpen, setIsChronicConditionsModalOpen] = useState(false);
+
+  const fetchHeaderData = async () => {
+    try {
+      const headerRes = await PatientChartAPI.getPatientHeader(patientId);
+      if (headerRes.data) {
+        setPatientData(headerRes.data);
+      }
+    } catch (err) {
+      console.error("Error fetching patient header data:", err);
+    }
+  };
 
   useEffect(() => {
     const fetchChartData = async () => {
@@ -65,7 +80,7 @@ const PatientChart = ({ patientId, appointmentId, encounterId, onBack }) => {
     if (patientId) {
       fetchChartData();
     }
-  }, [patientId, appointmentId]);
+  }, [patientId, appointmentId, encounterId]);
 
   if (loading) {
     return <div className="flex items-center justify-center h-screen text-xl text-gray-500">Loading Patient Chart...</div>;
@@ -75,10 +90,39 @@ const PatientChart = ({ patientId, appointmentId, encounterId, onBack }) => {
     <div className="flex flex-col h-screen bg-white overflow-hidden font-sans">
       <ChartHeader patientData={patientData} onBack={onBack} />
       <div className="flex flex-1 overflow-hidden">
-        <ChartLeftSidebar patientId={patientId} patientData={patientData} />
-        <ChartMainBody patientId={patientId} appointmentId={appointmentId} encounterId={encounterId} initialData={chartData} />
+        <ChartLeftSidebar 
+          patientId={patientId} 
+          patientData={patientData} 
+          onAddAllergiesClick={() => setIsAllergiesModalOpen(true)}
+          onAddChronicConditionsClick={() => setIsChronicConditionsModalOpen(true)}
+        />
+        <ChartMainBody patientId={patientId} appointmentId={appointmentId} encounterId={encounterId} initialData={chartData} onBack={onBack} />
         <ChartRightSidebar patientId={patientId} patientData={patientData} initialData={chartData} />
       </div>
+      
+      {isAllergiesModalOpen && (
+        <AddAllergiesModal
+          isOpen={isAllergiesModalOpen}
+          onClose={() => setIsAllergiesModalOpen(false)}
+          patientId={patientId}
+          initialAllergies={patientData?.allergiesData || {}}
+          onSaveSuccess={() => {
+            fetchHeaderData();
+          }}
+        />
+      )}
+
+      {isChronicConditionsModalOpen && (
+        <AddChronicConditionsModal
+          isOpen={isChronicConditionsModalOpen}
+          onClose={() => setIsChronicConditionsModalOpen(false)}
+          patientId={patientId}
+          initialConditions={patientData?.chronicConditionsData || {}}
+          onSaveSuccess={() => {
+            fetchHeaderData();
+          }}
+        />
+      )}
     </div>
   );
 };

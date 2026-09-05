@@ -3,7 +3,7 @@ import { Mic, Edit2, Plus, Trash2, Calendar, FileSignature, Loader2, X } from 'l
 import PatientChartAPI from '../API/patientChartAPI';
 import AddSymptomsModal from './AddSymptomsModal';
 
-const ChartMainBody = ({ patientId, appointmentId, encounterId, initialData }) => {
+const ChartMainBody = ({ patientId, appointmentId, encounterId, initialData, onBack }) => {
   const [isSaving, setIsSaving] = useState(false);
   const [formData, setFormData] = useState({
     reasonForVisit: '',
@@ -22,7 +22,8 @@ const ChartMainBody = ({ patientId, appointmentId, encounterId, initialData }) =
   const [showAssessmentDropdown, setShowAssessmentDropdown] = useState(false);
 
   const [isSymptomsModalOpen, setIsSymptomsModalOpen] = useState(false);
-
+  const [isSignModalOpen, setIsSignModalOpen] = useState(false);
+  const [noteName, setNoteName] = useState("");
   const [prescriptions, setPrescriptions] = useState([]);
 
   const [vitalsList, setVitalsList] = useState([]);
@@ -97,7 +98,7 @@ const ChartMainBody = ({ patientId, appointmentId, encounterId, initialData }) =
         ]);
       }
     } else {
-      setPrescriptions([{ patientPrescriptionId: null, drugName: '', medicationId: null, type: 'Medicine', freq: '0-0-0', dur: '', inst: '' }]);
+      setPrescriptions([{ patientPrescriptionId: null, drugName: '', medicationId: null, type: 'Medicine', freq: '0-0-0', dur: '', inst: '', route: '' }]);
       setVitalsList([
         { id: 'v1', header: 'BP', data: '', isNew: false },
         { id: 'v2', header: 'HR', data: '', isNew: false },
@@ -130,7 +131,7 @@ const ChartMainBody = ({ patientId, appointmentId, encounterId, initialData }) =
           newP.pop();
         }
       } else if (index === newP.length - 1 && value.trim() !== '') {
-        newP.push({ patientPrescriptionId: null, drugName: '', medicationId: null, type: 'Medicine', freq: '0-0-0', dur: '', inst: '' });
+        newP.push({ patientPrescriptionId: null, drugName: '', medicationId: null, type: 'Medicine', freq: '0-0-0', dur: '', inst: '', route: '' });
       }
     }
     setPrescriptions(newP);
@@ -139,7 +140,7 @@ const ChartMainBody = ({ patientId, appointmentId, encounterId, initialData }) =
   const removePrescription = (index) => {
     let newP = prescriptions.filter((_, i) => i !== index);
     if (newP.length === 0 || newP[newP.length - 1].drugName.trim() !== '') {
-      newP.push({ patientPrescriptionId: null, drugName: '', medicationId: null, type: 'Medicine', freq: '0-0-0', dur: '', inst: '' });
+      newP.push({ patientPrescriptionId: null, drugName: '', medicationId: null, type: 'Medicine', freq: '0-0-0', dur: '', inst: '', route: '' });
     }
     setPrescriptions(newP);
     handleUnifiedSave(formData, vitalsList, newP);
@@ -242,7 +243,8 @@ const ChartMainBody = ({ patientId, appointmentId, encounterId, initialData }) =
           medicationId: p.medicationId,
           frequency: p.freq,
           duration: p.dur,
-          instruction: p.inst
+          instruction: p.inst,
+          route: p.route
         }))
       };
 
@@ -329,7 +331,8 @@ const ChartMainBody = ({ patientId, appointmentId, encounterId, initialData }) =
                 type: 'Medicine',
                 freq: p.frequency,
                 dur: p.duration,
-                inst: p.instruction
+                inst: p.instruction,
+                route: p.route
               })));
             }
           }
@@ -481,7 +484,7 @@ const ChartMainBody = ({ patientId, appointmentId, encounterId, initialData }) =
             value={formData.reasonForVisit}
             onChange={handleChange}
             onBlur={() => handleUnifiedSave(formData, vitalsList, prescriptions)}
-            placeholder="No reason for visit recorded. Click to enter..."
+            placeholder="Patient reported symptoms or reason for today's encounter..."
           />
         </div>
 
@@ -492,12 +495,10 @@ const ChartMainBody = ({ patientId, appointmentId, encounterId, initialData }) =
           </div>
           {(!formData.symptoms || formData.symptoms.length === 0) ? (
             <div
-              className="w-full border border-dashed border-gray-300 rounded-xl p-6 min-h-[110px] bg-gray-50 flex flex-col items-center justify-center cursor-pointer hover:bg-gray-100 transition-colors"
+              className="w-full border border-gray-200 rounded-xl p-4 text-base font-inherit min-h-[110px] bg-white shadow-sm flex items-start text-gray-400 cursor-pointer"
               onClick={() => setIsSymptomsModalOpen(true)}
             >
-              <Plus size={24} className="mb-2 text-gray-400" />
-              <span className="text-base font-medium text-gray-500">No symptoms recorded</span>
-              <span className="text-sm text-blue-500 mt-1">Click to add symptoms</span>
+              No symptoms selected
             </div>
           ) : (
             <div className="w-full border border-gray-200 rounded-xl p-4 min-h-[110px] bg-white shadow-sm flex flex-wrap gap-3 items-start content-start">
@@ -535,7 +536,7 @@ const ChartMainBody = ({ patientId, appointmentId, encounterId, initialData }) =
           value={formData.examination}
           onChange={handleChange}
           onBlur={() => handleUnifiedSave(formData, vitalsList, prescriptions)}
-          placeholder="No clinical findings recorded. Click to enter examination..."
+          placeholder="Enter the examination of the patient"
         />
       </div>
 
@@ -566,7 +567,7 @@ const ChartMainBody = ({ patientId, appointmentId, encounterId, initialData }) =
               className="w-full border border-gray-200 rounded-xl p-3 text-sm font-inherit outline-none box-border focus:border-blue-500 transition-colors bg-white shadow-sm"
               value={assessmentSearchQuery}
               onChange={handleAssessmentSearchChange}
-              placeholder="Search for assessments or diagnoses..."
+              placeholder="Search for assessments or tests..."
               onFocus={() => {
                 if (assessmentSearchQuery.length >= 3) setShowAssessmentDropdown(true);
               }}
@@ -618,10 +619,11 @@ const ChartMainBody = ({ patientId, appointmentId, encounterId, initialData }) =
           <table className="w-full border-collapse">
             <thead className="bg-[#f8fafc]">
               <tr>
-                <th className="text-left p-4 text-xs text-gray-500 font-semibold rounded-tl-xl w-[35%]">Drug Name</th>
-                <th className="text-left p-4 text-xs text-gray-500 font-semibold w-[20%]">Frequency</th>
-                <th className="text-left p-4 text-xs text-gray-500 font-semibold w-[20%]">Duration</th>
-                <th className="text-left p-4 text-xs text-gray-500 font-semibold w-[20%]">Instruction</th>
+                <th className="text-left p-4 text-xs text-gray-500 font-semibold rounded-tl-xl w-[25%]">Drug Name</th>
+                <th className="text-left p-4 text-xs text-gray-500 font-semibold w-[15%]">Frequency</th>
+                <th className="text-left p-4 text-xs text-gray-500 font-semibold w-[15%]">Route</th>
+                <th className="text-left p-4 text-xs text-gray-500 font-semibold w-[15%]">Duration</th>
+                <th className="text-left p-4 text-xs text-gray-500 font-semibold w-[25%]">Instruction</th>
                 <th className="p-4 text-xs text-gray-500 font-semibold rounded-tr-xl w-[5%]"></th>
               </tr>
             </thead>
@@ -662,6 +664,9 @@ const ChartMainBody = ({ patientId, appointmentId, encounterId, initialData }) =
                             onMouseDown={() => {
                               handlePrescriptionChange(i, 'medicationId', m.id);
                               handlePrescriptionChange(i, 'drugName', m.name + (m.strength ? ` ${m.strength}` : ''));
+                              handlePrescriptionChange(i, 'type', m.form || 'Medicine');
+                              handlePrescriptionChange(i, 'route', m.route || '');
+                              setFocusedRowIndex(null);
                             }}
                           >
                             {m.name} {m.strength}
@@ -684,6 +689,15 @@ const ChartMainBody = ({ patientId, appointmentId, encounterId, initialData }) =
                         <path d="M1 1L5 5L9 1" stroke="#6B7280" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
                       </svg>
                     </div>
+                  </td>
+                  <td className="p-4 text-sm align-middle">
+                    <input
+                      type="text"
+                      className="bg-transparent border-none outline-none w-full text-sm font-medium text-gray-900 placeholder-gray-400"
+                      placeholder="Route"
+                      value={med.route || ""}
+                      onChange={(e) => handlePrescriptionChange(i, 'route', e.target.value)}
+                    />
                   </td>
                   <td className="p-4 text-sm align-middle">
                     <div className="flex items-center justify-between">
@@ -776,21 +790,55 @@ const ChartMainBody = ({ patientId, appointmentId, encounterId, initialData }) =
           <button className="bg-white border border-gray-300 text-gray-700 py-2.5 px-6 rounded-lg font-semibold cursor-pointer hover:bg-gray-50 transition-colors">Save as Draft</button>
           <button
             className="bg-blue-600 text-white border-none py-2.5 px-6 rounded-lg font-semibold cursor-pointer flex items-center gap-2 hover:bg-blue-700 transition-colors"
-            onClick={async () => {
-              if (!encounterId) return;
-              try {
-                await PatientChartAPI.signEncounter(encounterId);
-                alert("Chart successfully signed and completed.");
-              } catch (e) {
-                console.error(e);
-                alert("Failed to sign chart.");
-              }
-            }}
+            onClick={() => setIsSignModalOpen(true)}
           >
             <FileSignature size={16} /> Commit & Sign Chart
           </button>
         </div>
       </div>
+
+      {isSignModalOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg shadow-lg w-96 p-6">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg font-semibold text-gray-900">Sign Chart</h3>
+              <button onClick={() => setIsSignModalOpen(false)} className="text-gray-500 hover:text-gray-700">
+                <X size={20} />
+              </button>
+            </div>
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 mb-1">Note Name (Optional)</label>
+              <input 
+                type="text" 
+                className="w-full border border-gray-300 rounded-md p-2.5 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="e.g. Follow-up Checkup"
+                value={noteName}
+                onChange={(e) => setNoteName(e.target.value)}
+              />
+            </div>
+            <div className="flex justify-end gap-3 mt-6">
+              <button onClick={() => setIsSignModalOpen(false)} className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 font-medium hover:bg-gray-50 cursor-pointer">Cancel</button>
+              <button 
+                onClick={async () => {
+                  if (!encounterId) return;
+                  try {
+                    await PatientChartAPI.signEncounter(encounterId, noteName);
+                    alert("Chart successfully signed and completed.");
+                    setIsSignModalOpen(false);
+                    if (onBack) onBack(); // Redirect to patient profile
+                  } catch (e) {
+                    console.error(e);
+                    alert("Failed to sign chart.");
+                  }
+                }}
+                className="px-4 py-2 bg-blue-600 text-white rounded-md font-medium hover:bg-blue-700 cursor-pointer"
+              >
+                Save & Sign
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <AddSymptomsModal
         isOpen={isSymptomsModalOpen}
