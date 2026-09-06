@@ -18,19 +18,20 @@ export const usePatientProfile = (patientId) => {
   const [medicationsPage, setMedicationsPage] = useState(1);
   const [allergiesPage, setAllergiesPage] = useState(1);
 
+  const fetchProfile = async () => {
+    if (!patientId) return;
+    try {
+      setLoading(true);
+      const res = await PatientChartAPI.getPatientProfile(patientId);
+      setPatientData(res.data);
+    } catch (e) {
+      console.error("Failed to load patient profile:", e);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const fetchProfile = async () => {
-      if (!patientId) return;
-      try {
-        setLoading(true);
-        const res = await PatientChartAPI.getPatientProfile(patientId);
-        setPatientData(res.data);
-      } catch (e) {
-        console.error("Failed to load patient profile:", e);
-      } finally {
-        setLoading(false);
-      }
-    };
     fetchProfile();
   }, [patientId]);
 
@@ -98,6 +99,7 @@ export const usePatientProfile = (patientId) => {
   return {
     patientData,
     loading,
+    refetch: fetchProfile,
     tabs: {
       conditions: { active: activeConditionTab, set: setActiveConditionTab },
       medications: { active: activeMedicationTab, set: setActiveMedicationTab },

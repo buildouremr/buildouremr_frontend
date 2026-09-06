@@ -344,3 +344,88 @@
   color: #0066FF;
   cursor: pointer;
 }
+
+/* UNSIGNED CHART AMBER BANNER */
+.pp-unsigned-banner {
+  background-color: #fffbeb;
+  border: 1.5px solid #fde68a;
+  border-radius: 12px;
+  padding: 18px 24px;
+  margin-bottom: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.pp-unsigned-left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.pp-unsigned-icon-wrapper {
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  background-color: #fef3c7;
+  color: #d97706;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.pp-unsigned-text-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.pp-unsigned-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: #92400e;
+  margin: 0 0 4px 0;
+}
+
+.pp-unsigned-subtitle {
+  font-size: 13px;
+  color: #b45309;
+  margin: 0;
+}
+
+.pp-unsigned-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.pp-unsigned-btn {
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.15s ease;
+}
+
+.pp-unsigned-btn.review {
+  background: #ffffff;
+  border: 1.5px solid #fcd34d;
+  color: #b45309;
+}
+
+.pp-unsigned-btn.review:hover {
+  background: #fef3c7;
+}
+
+.pp-unsigned-btn.continue {
+  background: #f59e0b;
+  border: none;
+  color: #ffffff;
+}
+
+.pp-unsigned-btn.continue:hover {
+  background: #d97706;
+}

@@ -3,6 +3,8 @@ import { usePatientProfile, createEncounter } from "./PatientProfile";
 import ChartHeader from "../PatientChart/ChartHeader";
 import Pagination from "../../components/Pagination/Pagination";
 import ClinicalJourneyDrawer from "../../components/Drawers/ClinicalJourneyDrawer/ClinicalJourneyDrawer";
+import StartConsultationModal from "./StartConsultationModal";
+import UnsignedChartPreviewModal from "./UnsignedChartPreviewModal";
 import "./PatientProfile.css";
 
 // SVG Icons
@@ -42,17 +44,25 @@ const EmptyState = ({ title, subtitle }) => (
 );
 
 const PatientProfile = ({ patientId, appointmentId, onBack, onOpenNotes }) => {
-  const { patientData, loading, tabs, pagination, counts } = usePatientProfile(patientId);
+  const { patientData, loading, refetch, tabs, pagination, counts } = usePatientProfile(patientId);
   const [isCreatingVisit, setIsCreatingVisit] = useState(false);
   const [isJourneyDrawerOpen, setIsJourneyDrawerOpen] = useState(false);
+  const [isStartConsultationModalOpen, setIsStartConsultationModalOpen] = useState(false);
+  const [isPreviewModalOpen, setIsPreviewModalOpen] = useState(false);
 
   if (loading || !patientData) {
     return <div className="flex items-center justify-center h-screen text-gray-500">Loading Patient Profile...</div>;
   }
 
+  const { header, alerts, vitals, clinicalJourney, unsignedChart } = patientData;
+
   const handleCreateVisit = async () => {
+    if (unsignedChart?.hasUnsignedChart) {
+      setIsStartConsultationModalOpen(true);
+      return;
+    }
     setIsCreatingVisit(true);
-    const dbPatientId = typeof patientId === 'number' ? patientId : 1; 
+    const dbPatientId = typeof patientId === 'number' ? patientId : (parseInt(patientId, 10) || 1); 
     const res = await createEncounter(dbPatientId);
     setIsCreatingVisit(false);
     if (res && res.status === "SUCCESS") {
@@ -61,8 +71,6 @@ const PatientProfile = ({ patientId, appointmentId, onBack, onOpenNotes }) => {
       alert("Failed to create encounter");
     }
   };
-
-  const { header, alerts, vitals, clinicalJourney } = patientData;
 
   return (
     <div className="patient-profile-container">
@@ -104,6 +112,37 @@ const PatientProfile = ({ patientId, appointmentId, onBack, onOpenNotes }) => {
           )}
           <a className="pp-view-trends">View Trends</a>
         </div>
+
+        {/* UNSIGNED CHART AMBER BANNER */}
+        {unsignedChart?.hasUnsignedChart && (
+          <div className="pp-unsigned-banner">
+            <div className="pp-unsigned-left">
+              <div className="pp-unsigned-icon-wrapper">
+                <AlertTriangleIcon />
+              </div>
+              <div className="pp-unsigned-text-group">
+                <h4 className="pp-unsigned-title">Unsigned Chart</h4>
+                <p className="pp-unsigned-subtitle">
+                  Last updated: {unsignedChart.lastUpdated}
+                </p>
+              </div>
+            </div>
+            <div className="pp-unsigned-actions">
+              <button 
+                className="pp-unsigned-btn review" 
+                onClick={() => setIsPreviewModalOpen(true)}
+              >
+                Review & Close
+              </button>
+              <button 
+                className="pp-unsigned-btn continue"
+                onClick={() => onOpenNotes(patientId, unsignedChart.encounterId)}
+              >
+                Continue Unsigned Chart
+              </button>
+            </div>
+          </div>
+        )}
 
         <div className="pp-vitals-row">
           {vitals.map((v, idx) => (
@@ -406,7 +445,13 @@ const PatientProfile = ({ patientId, appointmentId, onBack, onOpenNotes }) => {
                         <button 
                           className="pp-action-btn" 
                           style={{color: '#3b82f6', background: 'transparent', border: 'none', cursor: 'pointer', fontWeight: 500}}
-                          onClick={() => setIsJourneyDrawerOpen(true)}
+                          onClick={() => {
+                            if (!item.isCompleted && unsignedChart?.hasUnsignedChart) {
+                              setIsPreviewModalOpen(true);
+                            } else {
+                              setIsJourneyDrawerOpen(true);
+                            }
+                          }}
                         >
                           {item.isCompleted ? 'View' : 'Review'}
                         </button>
@@ -424,6 +469,39 @@ const PatientProfile = ({ patientId, appointmentId, onBack, onOpenNotes }) => {
       <ClinicalJourneyDrawer 
         isOpen={isJourneyDrawerOpen} 
         onClose={() => setIsJourneyDrawerOpen(false)} 
+      />
+
+      <StartConsultationModal
+        isOpen={isStartConsultationModalOpen}
+        onClose={() => setIsStartConsultationModalOpen(false)}
+        unsignedInfo={unsignedChart}
+        onContinueUnsigned={(encId) => {
+          setIsStartConsultationModalOpen(false);
+          onOpenNotes(patientId, encId);
+        }}
+        onReviewAndClose={(encId) => {
+          setIsStartConsultationModalOpen(false);
+          setIsPreviewModalOpen(true);
+        }}
+      />
+
+      <UnsignedChartPreviewModal
+        isOpen={isPreviewModalOpen}
+        onClose={() => setIsPreviewModalOpen(false)}
+        patientId={patientId}
+        encounterId={unsignedChart?.encounterId}
+        unsignedInfo={unsignedChart}
+        onContinueEditing={(encId) => {
+          setIsPreviewModalOpen(false);
+          onOpenNotes(patientId, encId);
+        }}
+        onSignAndStartNew={(newEncounterId) => {
+          setIsPreviewModalOpen(false);
+          onOpenNotes(patientId, newEncounterId);
+        }}
+        onSignOnlySuccess={() => {
+          refetch();
+        }}
       />
     </div>
   );
